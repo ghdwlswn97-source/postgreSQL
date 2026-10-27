@@ -91,6 +91,208 @@ from EMPLOYEE;
 select EMp_name, SALARY, BONUS, SALARY*12 "연봉(원)", (BONUS*SALARY)+SALARY*12 as "총 소득"
 from EMPLOYEE;
 
+-----------------------------------------------------------------------------------------------
+/*
+ <리터럴>
+ 임의로 지정한 문자열('')
+ 
+ select절에 리터럴을 제시하면 마치 테이블상에 존재하는 데이터처럼 조회 가능
+ 조회 된 result set의 모든 행에 반복적으로 같이 출력
+ */
+
+-- employee에 사번, 사원명, 급여 조회
+select emp_id, emp_name, salary, '원' as 단위
+from employee;
+
+--------------------------------------------------------------------------------
+/*
+ <연결 연산자 : ||>
+ 여러 컬럼값들을 마치 하나의 컬럼인것처럼 연결하거나, 컬럼값과 리터럴을 연결할 수 있다
+ * 숫자를 그냥 결합하면 타입 에러
+   숫자형을 문자로 명시적 변환(::text)
+ */
+-- employee에서 사번, 이름, 급여를 하나의 컬럼으로 조회
+select emp_id|| emp_name|| salary as id_name
+from employee;
+
+-- 컬럼값과 리터럴을 연결
+select emp_name||'의 월급은 '||salary||'원 입니다' as 급여
+from employee;
+
+------------------------------------------------------------------------------------
+/*
+ 	<DISTINCT>
+ 	컬럼에 중복된 값들을 한번씩만 표시하고자 할 때
+ 	
+ 	-> 하나의 컬럼씩 가능
+ */
+-- employee에서 직급코드 조회
+select job_code from employee;
+
+-- 중복 제거
+select distinct job_code from employee;
+
+-- 부서코드 중복제거
+select distinct dept_code from employee;
+
+-- 하나의 컬럼씩 가능
+-- 두개 이상의 컬럼은 dept_code, job_code값을 한쌍으로 취급, 두 값이 모두 중복되는 데이터만 제거 됨
+select distinct dept_code, job_code from employee;		
+
+---------------------------------------------------------------------------------------
+/*
+ <WHEHE 절>
+ 조회하고자 하는 테이블로부터 특정 조건에 만족하는 데이터만 조회할 때 WHERE절에 조건식을 쓴다
+ 조건식에는 다양한 연산자들을 사용 가능
+ 
+ [표현법]
+ SELECT 컬럼, 컬럼,...
+ FROM 테이블명
+ WHERE 조건식;
+ 
+ * 비교 연산자
+ 	<,>,<=,>=		-> 대소 비교
+ 	= 				-> 같은값 비교
+ 	!=, <>			-> 같지 않음 비교
+ */
+-- EMPLOYEE에서 부서코드가 'D9'인 사원의 모든 컬럼 조회
+select *
+from employee 
+where DEPT_CODE='D9';
+
+-- EMPLOYEE에서 부서코드가 'D1'인 사원의 사원명, 급여, 부서코드 조회
+select EMP_NAME, SALARY, DEPT_CODE
+from employee 
+where DEPT_CODE='D1';
+
+-- EMPLOYEE에서 부서코드가 'D1'인 사원의 사원명, 급여, 부서코드 조회
+select EMP_NAME, SALARY, DEPT_CODE
+from employee 
+where DEPT_CODE!='D1';		-- where DEPT_CODE<>'D1';
+
+-- EMPLOYEE에서 급여가 400만원 이상인 사원의 사원명, 급여, 입사일 조회
+select EMP_NAME, SALARY, HIRE_DATE
+from employee 
+where SALARY >= 4000000;
+
+-- EMPLOYEE에서 재직중인 사원들의 사번, 사원명, 입사일, 재직여부 조회
+select EMP_ID, EMP_NAME, HIRE_DATE, ENT_YN
+from EMPLOYEE 
+where ENT_YN='N';		-- where ENT_YN!='Y';
+
+---------------------------- 실습문제 -------------------------------------------
+--1. 급여가 300만원 이상인 사원들의 사원명, 급여, 입사일, 연봉 조회
+select EMP_NAME, SALARY, HIRE_DATE, SALARY*12 as 연봉
+from EMPLOYEE
+where SALARY >= 3000000
+
+--2. 연봉이 5000만원 이상인 사원들의 사원명, 급여, 연봉, 부서코드 조회
+select EMP_NAME, SALARY, SALARY*12 as 연봉, DEPT_CODE
+from employee 
+where SALARY*12 >= 50000000;
+
+--3. 직급코드가 'J3'이 아닌 사원들의 사번, 사원명, 직급코드, 퇴사여부 조회
+select EMP_ID, EMP_NAME, JOB_CODE, ENT_YN
+from EMPLOYEE
+where JOB_CODE != 'J3'
+
+---------------------------------------------------------------------------------
+/*
+ <논리 연산자>
+ 여러개의 조건을 제시하고자 할 때
+ 
+ AND (~이면서, 그리고)
+ OR	 (~이거나, 또는)
+ */
+-- 부서코드가 'D9'이면서, 급여가 500만원 이상인 사원들의 사원명, 부서코드, 급여 조회
+select EMP_NAME, DEPT_CODE, SALARY
+from employee 
+where DEPT_CODE ='D9' and SALARY >= 5000000;
+
+-- 부서코드가 'D6'이거나, 급여가 300만원 이상인 사원의 사원명, 부서코드, 급여 조회
+select EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where DEPT_CODE = 'D6' or SALARY >= 3000000;
+
+-- 급여가 350만원 이상, 600만원 이하인 사원들의 사원명, 사번, 급여 조회
+select EMP_NAME, EMP_ID, SALARY
+from employee
+where SALARY >=3500000 and SALARY <=6000000;
+
+------------------------------------------------------------------------
+/*
+ <BETWEEN AND>
+ 조건식에서 사용되는 구문으로 ~ 이상, ~이하인 범위에 대한 조건을 제시할 때 사용되는 연산자
+ 
+ [표현법]
+ 비교대상컬럼 BETWEEN 하한값 AND 상한값
+ */
+
+-- 급여가 350만원 이상, 600만원 이하인 사원들의 사원명, 사번, 급여 조회
+select EMP_NAME, EMP_ID, SALARY
+from employee
+where SALARY between 3500000 and 6000000;		
+
+-- 급여가 350만원 이상, 600만원 이하인 사원들을 제외한 나머지 사원들의 사원명, 사번, 급여 조회		-> 제외 : NOT 조건문 사용
+select EMP_NAME, EMP_ID, SALARY
+from employee
+where not SALARY between 3500000 and 6000000;
+
+-- 입사일이 '1990-01-01~2004-12-31'사이인 사람들의 모든 컬럼 조회
+select *
+from EMPLOYEE
+where HIRE_DATE between '1990-01-01' and '2004-12-31';
+
+--------------------------------------------------------------------------------------
+/*
+ <LIKE>
+ 비교하고자 하는 컬럼값이 내가 제시한 특정 패턴에 만족하는 경우 조회
+ 
+ [표현법]
+ 비교대상컬럼 LIKE '특정패턴' 
+ 	: '특정패턴'에는 와일드카드(%, _)로 쓸 수 있다
+ 	
+ 	* % : 0글자 이상
+ 	* 	EX) 비교대상컬럼 LIKE '문자%' -> 비교대상의 컬럼값이 '문자'로 시작되는 것 조회
+ 	* 		비교대상컬럼 LIKE '%문자' -> 비교대상의 컬럼값이 '문자'로 끝나는 것 조회
+ 	* 		비교대상컬럼 LIKE '%문자%' -> 비교대상의 컬럼값이 '문자'가 포함되는 것 조회
+ 	 
+ 	* _ : 1글자
+ 		EX) 비교대상컬럼 LIKE '_문자'		-> 비교대상의 컬럼값이 '문자'앞에 무조건 한글자가 오는 것 조회
+ 			비교대상컬럼 LIKE '__문자'	-> 비교대상의 컬럼값이 '문자'앞에 무조건 두글자가 오는 것 조회
+ 			비교대상컬럼 LIKE '_문자_'	-> 비교대상의 컬럼값이 '문자'앞, 뒤에 무조건 한글자가 오고는 것 조회
+ */
+-- 사원들 중에서 성이 전씨인 사원의 사원명, 급여, 입사일 조회
+select EMP_NAME, SALARY, HIRE_DATE
+from EMPLOYEE
+where EMP_NAME like '전%';
+
+-- 사원들 이름 중에 '하'가 포함되어있는 사원의 사번, 사원명, 전화번호 조회
+select EMP_ID, EMP_NAME, PHONE
+from EMPLOYEE
+where EMP_NAME like '%하%';
+
+-- 사원들 중 이름의 가운데에 '하'가 포함되어있는 사원의 사번, 사원명, 이메일 조회
+select EMP_ID, EMP_NAME, EMAIL
+from EMPLOYEE
+where EMP_NAME like '_하_';
+
+-- 사원들 중 전화번호 3번째 자리가 1인 사원의 사번, 사원명, 전화번호, 이메일 조회
+select EMP_ID, EMP_NAME, PHONE, EMAIL
+from EMPLOYEE
+where PHONE like '__1%';	-- -> '__1%' 3번째 자리가 1이고 위에 숫자가 몇개든 상관없는 값 
+
+-- 이메일 중 _(언더바)앞에 글자가 3글자인 사원들의 사번, 이름, 이메일 조회
+select EMP_ID,EMP_NAME, EMAIL 
+from EMPLOYEE
+where EMALL like '___%'
+-- 와일드카드로 사용되는 문자와 컬럼값에 들어있는 문자가 동일하기 때문에 조회가안됨
+
+
+
+
+
+
 
 
 
