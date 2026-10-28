@@ -285,8 +285,248 @@ where PHONE like '__1%';	-- -> '__1%' 3번째 자리가 1이고 위에 숫자가
 -- 이메일 중 _(언더바)앞에 글자가 3글자인 사원들의 사번, 이름, 이메일 조회
 select EMP_ID,EMP_NAME, EMAIL 
 from EMPLOYEE
-where EMALL like '___%'
+where EMAIL like '___%'
 -- 와일드카드로 사용되는 문자와 컬럼값에 들어있는 문자가 동일하기 때문에 조회가안됨
+--> 어떤것이 와일드 카드이고 데이터값인지 구분해줘야 함
+--> 데이터 값으로 취급하고자 하는 값 앞에 나만의 와일드카드 (숫자, 문자, 특수기호 다 가능)
+--	나만의 와일드카드를 ESCAPE에 등록
+
+select EMP_ID,EMP_NAME, EMAIL 
+from EMPLOYEE
+where EMAIL like '___$_%' escape '$';
+
+-- 위의 사원을 제외한 사원들 조회
+select EMP_ID, EMP_NAME, EMAIL
+from EMPLOYEE
+WHERE not EMAIL like '___$_%' escape '$';
+
+------------------------------------ 실습문제 ---------------------------------------------
+--1. EMPLOYEE에서 이름이 '연'으로 끝나는 사원들의 사번, 사원명, 입사일 조회
+select EMP_ID, EMP_NAME, HIRE_DATE
+from EMPLOYEE
+where EMP_NAME like '%연';
+
+--2. EMPLOYEE에서 전화번호 처음 3자리가 010이 아닌 사원들의 사원명, 전화번호 조회
+select EMP_NAME, PHONE
+from EMPLOYEE
+where not PHONE like '010%';
+
+--3. EMPLOYEE에서 이름에 '하'가 포함되고, 급여가 240만원 이상인 사원의 사번, 사원명, 급여
+select EMP_ID, EMP_NAME, SALARY
+from EMPLOYEE
+where EMP_NAME like '%하%' and SALARY >=2400000;
+
+--4. DEPARTMENT에서 해외영업부인 부서들의 부서코드, 부서명 조회
+select DEPT_ID,DEPT_TITLE
+from department
+where DEPT_TITLE like '해외영업%';
+
+----------------------------------------------------------------------------------
+/*
+ <IS NULL / IS NOT NULL>
+ 컬럼값에 NULL이 있을 경우 NULL값 비교에 이용하는 연산자
+ */
+
+-- EMPLOYEE에서 보너스를 받지 않는 사원들의 사번, 이름, 급여, 보너스 조회
+select EMP_ID, EMP_NAME, SALARY, BONUS
+from EMPLOYEE
+where BONUS IS null;
+
+-- EMPLOYEE에서 보너스를 받는 사원들의 사번, 이름, 급여, 보너스 조회
+select EMP_ID, EMP_NAME, SALARY, BONUS
+from EMPLOYEE
+where BONUS is not null;
+
+-- ENPLOYEE에서 사수가 없는 사원의 사원명, 부서코드, 사수 조회
+select EMP_NAME, DEPT_CODE, MANAGER_ID
+from EMPLOYEE
+where MANAGER_ID is null;
+
+-- EMPLOYEE에서 부서배치를 받지않았지만 보너스는 받는 사원들의 이름, 보너스, 부서코드 조회
+select EMP_NAME, BONUS, DEPT_CODE
+from EMPLOYEE
+where DEPT_CODE is null and BONUS is not null;
+
+------------------------------------------------------------------
+/*
+ <IN / NOT IN>
+ IN : 컬럼값이 내가 제시한 목록중에 일치하는 값이 있는것만 조회
+ NOT IN : 컬럼값이 내가 제시한 목록중에 일치하는 값을 제외한 나머지 조회
+
+ [표현법]
+ 비교대상컬럼 IN ('값1', '값2', '값3', '값4',.....) 
+ */
+
+-- EMPLOYEE에서 부서코드가 'D6'이거나 'D8'이거나 'D5'인 사원의 이름, 부서코드, 급여 조회
+select EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where DEPT_CODE in ('D6', 'D8','D5');		--WHERE DEPT_CODE ='D6' OR DEPT_CODE = 'D8' OR DEPT_CODE = 'D5';
+
+-- 위 조건을 제외한 사원들
+select EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where DEPT_CODE not in ('D6', 'D8','D5');
+
+------------------------------------------------------------------------------------------
+/*
+ <연산자 우선순위>
+ 1. ()
+ 2. 산술 연산자
+ 3. 연결 연산자
+ 4. 비교 연산자
+ 5. IS NULL / LIKE '패턴' / IN
+ 6. BETWEEN AND
+ 7. NOT(논리연산자)
+ 8. AND(논리연산자)
+ 9. OR(논리연산자) 
+ */
+
+-- 직급코드가 J7이거나 J2인 사원들 중 급여가 200만원 이상인 사원들의 모든 컬럼 조회
+select *
+from EMPLOYEE
+--where JOB_CODE = 'J7' or JOB_CODE = 'J2' and SALARY >=2000000;	-- AND가 우선순위가 높아서 J2이면서 급여가 200만원 이상인 사원과 JOB_CODE가 J7인 사원모두가 조회됨
+where (JOB_CODE = 'J7' or JOB_CODE = 'J2') and SALARY >=2000000;
+
+
+-------------------------- 실습문제------------------------
+-- 1. 사수가 없고 부서배치도 받지 않은 사원들의 사원명, 사수사번, 부서코드 조회
+select EMP_NAME, MANAGER_ID, DEPT_CODE
+from EMPLOYEE
+where MANAGER_ID is null and DEPT_CODE is null;
+
+-- 2. 연봉(보너스포함X)이 3000만원 이상이고 보너스를 받지 않은 사원들의 
+--		사번, 사원명, 연봉, 보너스 조회
+select EMP_ID, EMP_NAME, SALARY*12 as 연봉, BONUS
+from EMPLOYEE
+where SALARY*12 >=30000000 and BONUS is null;
+
+-- 3. 입사일이 1995-01-01 이상이고 부서배치를 받은 사원들의 
+--		사번, 사원명, 입사일, 부서코드 조회
+select EMP_ID, EMP_NAME, HIRE_DATE, DEPT_CODE
+from EMPLOYEE
+where HIRE_DATE > '1995-01-01' and DEPT_CODE is not null;
+
+-- 4. 급여가 200만원 이상 500만원 이하고 입사일이 2001-01-01 이상이고 
+--		보너스를 받지 않는 사원들의 사번, 사원명, 급여, 입사일, 보너스 조회
+select EMP_ID, EMP_NAME, SALARY, HIRE_DATE, BONUS
+from EMPLOYEE
+where SALARY between 2000000 and 5000000 and HIRE_DATE >= '2001-01-01' and BONUS is null;
+
+-- 5. 보너스포함 연봉이 NULL이 아니고 이름에 '하'가 포함되어 있는 사원들의 
+--		사번, 사원명, 급여, 보너스포함연봉 조회 (별칭부여)
+select EMP_ID, EMP_NAME, SALARY, (BONUS*SALARY)+SALARY*12 as 소득
+from EMPLOYEE
+where BONUS*SALARY+SALARY*12 is not null and EMP_NAME LIKE '%하%';
+
+
+------------------------------- 종합 문제 ----------------------------------
+-- 1. JOB테이블에서 모든 정보 조회
+select *
+from JOB;
+
+-- 2. JOB 테이블에서 직급 이름 조회
+select JOB_NAME
+from JOB;
+
+-- 3. DEPARTMENT 테이블에서 모든 정보 조회
+select *
+from DEPARTMENT;
+
+-- 4. EMPLOYEE테이블의 직원명, 이메일, 전화번호, 고용일 조회
+select EMP_NAME, EMAIL, PHONE, HIRE_DATE
+from EMPLOYEE;
+
+-- 5. EMPLOYEE테이블의 고용일, 사원 이름, 월급 조회
+select HIRE_DATE, EMP_NAME, SALARY
+from EMPLOYEE;
+
+-- 6. EMPLOYEE테이블에서 이름, 연봉, 총수령액(보너스포함), 실수령액(총수령액 - (연봉*세금 3%)) 조회
+select EMP_NAME, SALARY*12 as 연봉, BONUS*SALARY+SALARY*12 as 총수령액, (BONUS*SALARY+SALARY*12)-SALARY*12*0.03 as 실수령액
+from EMPLOYEE;
+
+-- 7. EMPLOYEE테이블에서 DEPT_CODE가 D5인 사원의 이름, 부서코드, 월급, 고용일, 연락처 조회
+select EMP_NAME, DEPT_CODE, SALARY, HIRE_DATE, PHONE
+from EMPLOYEE;
+
+-- 8. EMPLOYEE테이블에서 실수령액(6번 참고)이 5천만원 이상인 사원의 이름, 월급, 실수령액, 고용일 조회
+select EMP_NAME, SALARY, BONUS*SALARY+SALARY*12-SALARY*12*0.03 as 실수령액, HIRE_DATE
+from EMPLOYEE
+where BONUS*SALARY+SALARY*12-SALARY*12*0.03 >=50000000;
+
+-- 9. EMPLOYEE테이블에 월급이 4000000이상이고 JOB_CODE가 J2인 사원의 전체 내용 조회
+select *
+from EMPLOYEE
+where SALARY >=4000000 and JOB_CODE ='J2';
+
+-- 10. EMPLOYEE테이블에 DEPT_CODE가 D9이거나 D5인 사원 중 
+--     고용일이 02년 1월 1일보다 빠른 사원의 이름, 부서코드, 고용일 조회
+select EMP_NAME, DEPT_CODE, HIRE_DATE
+from EMPLOYEE
+where (DEPT_CODE ='D9' or DEPT_CODE = 'D5') and HIRE_DATE <= '2002-01-01';
+
+-- 11. EMPLOYEE테이블에 고용일이 90/01/01 ~ 01/01/01인 사원의 전체 내용을 조회
+select *
+from EMPLOYEE
+where HIRE_DATE between '1990-01-01' and '2001-01-01';
+
+
+-- 12. EMPLOYEE테이블에서 이름 끝이 '연'으로 끝나는 사원의 이름 조회
+select EMP_NAME
+from EMPLOYEE
+where EMP_NAME like '%연';
+
+-- 13. EMPLOYEE테이블에서 전화번호 처음 3자리가 010이 아닌 사원의 이름, 전화번호를 조회
+select EMP_NAME, PHONE
+from EMPLOYEE
+where not PHONE like '010%'
+
+
+-- 14. EMPLOYEE테이블에서 메일주소 '_'의 앞이 4자이면서 DEPT_CODE가 D9 또는 D6이고 
+--     고용일이 90/01/01 ~ 00/12/01이고, 급여가 270만 이상인 사원의 전체를 조회
+select *
+from EMPLOYEE
+where (EMAIL like '____$_' escape '$') and (DEPT_CODE ='D9' or DEPT_CODE='D6') and (HIRE_DATE between '1990-01-01' and '2000-12-01') and SALARY >= 2700000;
+
+
+------------------------------------------------------------------
+/*
+ <order by 절>
+ SELECT문 가장 마지막 줄에 작성함. 실행순서도 맨 마지막에 실행
+ 
+  [표현법]
+  SELECT 조회할 컬럼, 컬럼, ....
+  FROM 테이블명
+  WHERE 조건식 
+  ORDER BY 정렬 기준의 컬럼명 / 별칭 / 컬럼 순서[ASC(오름차순) | DESC(내림차순)] [NULLS FIRST | NULLS LAST]
+  
+  - ASC : 오름차순 정렬(생략 시 기본값)
+  - DESC : 내림차순 정렬
+  
+  - NULLS FIRST : NULL데이터를 맨 앞에 배치(생략시 DESC 기본값)
+  - NULLS LAST : NULL데이터를 맨 끝에 배치(생략시 ASC 기본값)
+  
+ */
+select *
+from EMPLOYEE
+--order by BONUS;
+--order by BONUS ASC;
+--order by BONUS nulls FIRST;
+--order by BONUS DESC;
+order by BONUS desc, SALARY;		-- 보너스 내림차순 후 급여 오름차순.	 기준정렬 여러개 사용 가능
+
+-- 전 사원의 사원명, 연봉조회(연봉의 내림차순 정렬 조회)
+select EMP_NAME, SALARY*12 as 연봉
+from EMPLOYEE
+--order by SALARY*12 desc;
+--order by 연봉 desc;
+order by 2 desc;		-- 3개 모두 사용 가능
+
+
+
+
+
+
+
 
 
 
