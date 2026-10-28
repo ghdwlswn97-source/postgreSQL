@@ -98,7 +98,128 @@ from EMPLOYEE
 where SUBSTR(EMP_NO, 8, 1) in ('1', '3');
 
 --EMPLOYEE에서 EMAIL의 아이디만 추출하여 사원명, 이메일, 아이디 조회
-select EMP_NAME, EMAIL, 
-from EMPLOYEE
+select EMP_NAME, EMAIL, SUBSTR(EMAIL, 1, POSITION('@' in EMAIL)-1) 아이디
+from EMPLOYEE;
+
+select EMP_NAME, EMAIL, SUBSTRING(EMAIL from 1 FOR POSITION('@' in EMAIL)-1) 아이디
+from EMPLOYEE;
+
+----------------------------------------------------------------------------------------
+/*
+  * LPAD / RPAD : 문자열 조회할 때 길이를 맞춰 통일감있게 조회하고자 할 때
+  
+    LPAD / RPAD ('문자열', 최종 반환할 문자의 길이, [덧붙이고자 하는 문자(생략가능]) 
+ */
+--20길이에 맞춰 EMAIL을 오른쪽 정렬하고 앞부분은 공백으로 채워서 출력
+select EMP_NAME, LPAD(EMAIL, 25)		-- 덧붙이는 문자 생략시 기본값 공백
+from EMPLOYEE;
+
+select EMP_NAME, LPAD(EMAIL, 25,'#')
+from EMPLOYEE;
+
+select EMP_NAME, RPAD(EMAIL, 25, '#')
+from EMPLOYEE;
+
+-- EMPLOYEE테이블에서 사번, 사원명, 주민번호 출력(주민번호는 123456-1******의 형식으로 출력)
+select EMP_ID, EMP_NAME, RPAD(SUBSTR(EMP_NO, 1, 8),14, '*')
+from EMPLOYEE;
+
+select EMP_ID, EMP_NAME, SUBSTR(EMP_NO, 1, 8)||'******' as 주민번호
+from EMPLOYEE;
+
+/*
+  * LTRIM / RTRIM : 문자열에서 특정 문자를 제거하고 반환
+  * TRIM : 문자의 앞/뒤 양쪽에 있는 특정 문자를 제거하고 반환
+  
+    LTRIM / RTRIM ('문자열',제거하고자 하는 문자) -> 제거하고자 하는 문자 생략시 공백제거
+    TRIM([LEADING|TRAILING|BOTH]제거하고자 하는 문자 FROM '문자열')
+ */
+select LTRIM('     TJOEUM     ')|| '컴퓨터아카데미';
+select rtrim('     THOEUM     ')|| '컴퓨터아카데미';
+
+select LTRIM('DATADATABASE', 'DATA');
+select LTRIM('BACABAADEIASDJ', 'ABC');
+select LTRIM('4523ADKF5432', '0123456789');
+
+select RTRIM('4523ADKF5432', '0123456789');
+
+select TRIM('     TJOEUN     ')|| '컴퓨터아카데미';		-- 기본값 : 양쪽제거
+
+-- 방향지정
+select TRIM(LEADIGN'A' from 'AAAAVDFKSLDFSFEFSN');
+select TRIM(trailing 'A' from 'AAAA34DAJFAAA');
+select TRIM(both 'A' FROM 'AAADFK3847DDAA');
+select TRIM('A' FROM 'AAADFK3847DDAA');
+
+/*
+  LOWER / UPPER / INITCAP : 문자열을 대소문자로 변환 및 단어의 앞글자만 대문자호 반환
+  LOWER('문자열') 
+ */
+
+select LOWER('DATABASE PostgreSQL');
+select upper('DATABASE PostgreSQL');
+select initcap('dATABASE PostgreSQL');
+
+-----------------------------------------------------------
+/*
+  * conact : 문자열 두개를 하나로 합친결과 반환
+  * 
+  * concat('문자열', '문자열',...)
+ * */
+
+select concat('sql', '포스트그레');
+select canat('postgreSQL''데이터베이스', '02-1234-3456;');
+
+select 'sql' || 포스트그레
+--------------------------------------------------------------
+/*
+   * REPLACE : 기준 문자열을 새로운 문자열로 변경
+   
+    [표현법]
+    REPLACE('문자열', '기존문자DUF', '바꿀문자열')
+    FROM EMPLOYEE; 
+ * */
 
 
+
+--------------------------------단일행 함수------------------------------------
+
+--==========================================================================
+--								<숫자 처리 함수>
+--==========================================================================
+/*
+ * ABS : 숫자의 절대값을 구하는 함구
+ * ABL(NUMBER)
+ * */
+select ABS(-19);
+select ABS(-13.67);
+
+---------------------------------------------
+/*
+ * MOD / $ 나머즤 값 반환*/
+select MOD(1-,3);
+select 10%3;
+
+-----------------------------------------
+/*
+ *  ROUND* : 반올림한 결과 반환
+ * 
+ 	 [표현법]
+ 	 ROUND(NUMBER, [위치]
+ 	 */
+
+select ROUND(1234.56);
+select ROUND(12.34);
+
+select ROUND(1234.5678, 2);
+select ROUND(1234.56, 4);
+
+select ROUND(1234.56, -1);
+-----------------------------------------
+/*
+ * CEIL : 올림한 결과 반환
+ * FLOOR : 내림한 결과 반환
+ * */
+
+select CEIL(123.234);
+select CEIL(-123.234);
