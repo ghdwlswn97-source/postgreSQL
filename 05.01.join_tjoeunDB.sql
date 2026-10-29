@@ -93,35 +93,100 @@ where JOB_NAME ='대리';
 ------------------------연습문제---------------------------------------
 -- 1. 부서가 인사관리부인 사원들의 사번, 사원명, 부서명, 보너스 조회
 select EMP_ID, EMP_NAME, DEPT_TITLE, BONUS
-from EMPLOYEE E
-join DEPARTMENT D On (E.DEPT_CODE = D.DEPT_ID)
+from EMPLOYEE 
+join DEPARTMENT On (DEPT_CODE = DEPT_ID)
 where DEPT_TITLE ='인사관리부';
 
 -- 2. DEPARTMENT와 LOCATION테이블을 참고하여 부서코드, 부서명, 지역코드, 지역명 조회
 select DEPT_ID, DEPT_TITLE, LOCATION_ID, LOCAL_NAME
-from DEPARTMENT D
-join location l on (D.LOCATION_ID = L.LOCAL_CODE);
+from DEPARTMENT 
+join location  on (LOCATION_ID = LOCAL_CODE);
 
 -- 3. 보너스를 받은 사원들의 사번, 사원명, 보너스, 부서명 조회
 select EMP_ID, EMP_NAME, BONUS, DEPT_TITLE
-from employee e 
-join department d on (E.DEPT_CODE=D.DEPT_ID)
+from employee 
+join department  on (DEPT_CODE=DEPT_ID)
 where BONUS iS not NULL;
 
 -- 4. 부서가 총무부가 아닌 사원들의 사원명, 급여, 부서명 조회
 select EMP_NAME, SALARY, DEPT_TITLE
-from employee e 
-join department d on (E.DEPT_CODE = D.DEPT_ID)
+from employee  
+join department  on (DEPT_CODE = DEPT_ID)
 where DEPT_TITLE != '총무부';
 
+--=========================================================
+/*
+ 2. 외부 조인 / 포괄 조인
+ 	두 테이블간의 JOIN시 일치하지 않는 행도 포함시켜 조회
+ 	단, 어느 테이블을 기준으로 할지 LEFT / RIGHT / FULL 중 하나를 지정
+*/
 
+-- 사원명, 부서명, 급여, 연봉
+select EMP_NAME, DEPT_CODE, DEPT_TITLE, SALARY, SALARY*12 as 연봉
+from EMPLOYEE
+join DEPARTMENT on (DEPT_CODE = DEPT_ID)
+order by 2;		-- 2번째 컬럼을 기준으로 오름차순
+-- 부서배치가 안된 사원 정보 X
+-- 부서에 배정된 사원이 없는 부서도 조회 X
+-- NULL값이 있는 항목이 제외 되고 나옴
 
+-- 1) LEFT [OUTER] JOIN 
+select EMP_NAME, DEPT_CODE, DEPT_TITLE, SALARY, SALARY*12 as 연봉
+from EMPLOYEE
+left join DEPARTMENT on (DEPT_CODE = DEPT_ID);
 
+-- 2) RIGHT [OUTER] JOIN
+select EMP_NAME, DEPT_CODE, DEPT_ID, DEPT_TITLE, SALARY, SALARY*12 as 연봉
+from EMPLOYEE
+right join DEPARTMENT on (DEPT_CODE = DEPT_ID);
 
+-- 3) FULL [OUTER] JOIN
+select EMP_NAME, DEPT_CODE, DEPT_TITLE, SALARY, SALARY*12 as 연봉
+from EMPLOYEE
+FULL join DEPARTMENT on (DEPT_CODE = DEPT_ID);
 
+--=================================================================
+/*
+ 3. 비등가 조인
+ 	매칭시킬 컬럼의 조건 작성시 '='을 사용하지 않는 JOIN문
+ 	=> JOIN ON만 사용 가능
+*/
 
+-- SAL_GRADE 테이블 조인(SAL_LEVEL컬럼)
+select EMP_NAME, SALARY
+from EMPLOYEE;
 
+-- 사원명, 급여, 급여레벨 조회
+select EMP_NAME, SALARY, SAL_LEVEL
+from EMPLOYEE
+join SAL_GRADE on (SALARY >= MIN_SAL and SALARY <= MAX_SAL);
 
+select EMP_NAME, SALARY, SAL_LEVEL
+from EMPLOYEE
+join SAL_GRADE on (SALARY BETWEEN MIN_SAL and  MAX_SAL);
+
+--=================================================================
+/*
+ 4. 자체 조인
+ 	같은 테이블을 다시 조회
+ 	중복되는 컬럼은 별칭으로 구문
+ */
+-- 사수가 있는 사원만 조회
+select EMP_ID, EMP_NAME,MANAGER_ID
+FROM EMPLOYEE
+where MANAGER_ID is not null;
+
+-- 사수가 있는 사원의 사번, 이름, 부서코드와 사수의 사번, 이름, 부서코드 조회
+select E.EMP_ID, E.EMP_NAME, E.DEPT_CODE
+		,M.EMP_ID, M.EMP_NAME, M.DEPT_CODE
+FROM EMPLOYEE E, EMPLOYEE M
+where E.MANAGER_ID = M.EMP_ID;
+
+-- >> 전체 사원(정보는 위와 같음)의 사수 조회
+select E.EMP_ID, E.EMP_NAME, E.DEPT_CODE
+		,M.EMP_ID as 사수사번, M.EMP_NAME as 사수이름, M.DEPT_CODE as 사수부서코드
+from employee e 
+left join EMPLOYEE M on (E.MANAGER_ID = M.EMP_ID);
 
 
 
