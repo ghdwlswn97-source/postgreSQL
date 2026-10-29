@@ -100,7 +100,7 @@ where DEPT_TITLE ='인사관리부';
 -- 2. DEPARTMENT와 LOCATION테이블을 참고하여 부서코드, 부서명, 지역코드, 지역명 조회
 select DEPT_ID, DEPT_TITLE, LOCATION_ID, LOCAL_NAME
 from DEPARTMENT D
-join "location" l on (D.LOCATION_ID = L.LOCAL_CODE);
+join location l on (D.LOCATION_ID = L.LOCAL_CODE);
 
 -- 3. 보너스를 받은 사원들의 사번, 사원명, 보너스, 부서명 조회
 select EMP_ID, EMP_NAME, BONUS, DEPT_TITLE
