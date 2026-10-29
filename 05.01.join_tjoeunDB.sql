@@ -188,13 +188,70 @@ select E.EMP_ID, E.EMP_NAME, E.DEPT_CODE
 from employee e 
 left join EMPLOYEE M on (E.MANAGER_ID = M.EMP_ID);
 
+--=================================================================
+/*
+ <다중 JOIN>
+ 	2개 이상의 테이블을 가지고 JOIN 할 때
+ */
+-- EMPLOYEE테이블의 전 사원들의 사번, 사원명, 부서명, 직급명 조회
 
+-- 매칭되는 테이블
+/*
+ 	테이블			컬럼				컬럼
+ EMPLOYEE		DEPT_CODE		JOB_CODE
+ DEPARTMENT		DEPT_ID
+ JOB 							JOB_CODE
+ */
 
+select EMP_ID, EMP_NAME, DEPT_TITLE, JOB_NAME
+from employee 
+left join DEPARTMENT on (DEPT_CODE = DEPT_ID)
+join JOB using (JOB_CODE);
 
+-- 사번, 사원명, 부서명, 지역명 조회
+/*
+ 	테이블			컬럼				컬럼
+ EMPLOYEE		DEPT_CODE		
+ DEPARTMENT		DEPT_ID			LOCATION_ID
+ LOCATION 						LOCAL_CODE
+ */
 
+-- 21명 조회
+select EMP_ID, EMP_NAME, DEPT_TITLE, LOCAL_NAME
+from EMPLOYEE
+join DEPARTMENT on (DEPT_CODE = DEPT_ID)
+join location on (LOCATION_ID = LOCAL_CODE);
 
+-- 부서가 없는 사원 2명 제외되고 조회(EMPLOYEE테이블 기준에 DEPT_CODE = DEPT_ID로 연결하기 때문)
+select EMP_ID, EMP_NAME, DEPT_TITLE, LOCAL_NAME
+from EMPLOYEE
+left join DEPARTMENT on (DEPT_CODE = DEPT_ID)
+join location on (LOCATION_ID = LOCAL_CODE);		
 
+-- 전사원 조회
+select EMP_ID, EMP_NAME, DEPT_TITLE, LOCAL_NAME
+from EMPLOYEE
+left join DEPARTMENT on (DEPT_CODE = DEPT_ID)
+left join location on (LOCATION_ID = LOCAL_CODE);
 
+---------------------실습문제------------------------
+-- 1. 사번, 사원명, 부서명, 지역명, 국가명 조회
+-- (EMPLOYEE,DEPARTMENT, LOCATION, NATIONAL)
+select EMP_ID, EMP_NAME, DEPT_TITLE, LOCAL_NAME, NATIONAL_NAME
+from employee 
+join DEPARTMENT on (DEPT_CODE = DEPT_ID)
+join location on (LOCATION_ID = LOCAL_CODE)
+join national USING (NATIONAL_CODE);
+
+-- 2. 사번, 사원명, 부서명, 직급명, 지역명, 국가명, 급여등급 조회
+--(모든 테이블)
+select EMP_ID, EMP_NAME, DEPT_TITLE, JOB_NAME, LOCAL_NAME, NATIONAL_NAME, SAL_LEVEL
+from EMPLOYEE
+join DEPARTMENT on (DEPT_CODE=DEPT_ID)
+join JOB USING (JOB_CODE)
+join location on (LOCATION_ID = LOCAL_CODE)
+join NATIONAL USING (NATIONAL_CODE)
+join sal_grade on (SALARY between MIN_SAL and MAX_SAL);
 
 
 
