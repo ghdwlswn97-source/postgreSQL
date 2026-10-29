@@ -105,13 +105,159 @@ having AVG(SALARY) >=3000000;
 select JOB_CODE, SUM(SALARY)
 from EMPLOYEE
 group by JOB_CODE
-having SUM(SALARY) >=10000000;
+having SUM(SALARY) >=10000000
+order by 1;
 
 --2. 부서별 보너스를 받는 사원이 없는 부서만 부서코드 조회
 select DEPT_CODE
 from EMPLOYEE
 group by DEPT_CODE
-having SUM(BONUS) is null;
+HAVING COUNT(BONUS) = 0;
+
+--select DEPT_CODE
+--from EMPLOYEE
+--group by DEPT_CODE
+--having SUM(BONUS)is NULL;
+
+-----------------------------------------------------------------------------------
+/*
+ <집계함수>
+ 그룹별 산출된 결과값에 중간집계를 계산해 주는 함수
+ 
+ ROLLUP, CUBE
+ => GROUP BY절에 기술하는 함수
+ 
+ - ROLLUP(컬럼1, 컬럼2) : 컬럼 1을 가지고 중간집계를 내는 함수
+ - CUBE(컬람1, 컬럼2) : 컬럼1을 가지고 중간집계내고, 컬럼2도 중간집계 내는 함수
+  */
+
+-- 각 직급별 급여의 합
+select JOB_CODE, SUM(SALARY)
+from EMPLOYEE
+group by JOB_CODE;
+
+select JOB_CODE, SUM(SALARY)
+from EMPLOYEE
+group by ROLLUP(JOB_CODE);
+-- 그룹기준이 하나의 컬럼일 때는 ROLLUP, CUBE 차이가 없음
+
+select DEPT_CODE, JOB_CODE, SUM(SALARY)
+from EMPLOYEE
+group by DEPT_CODE, JOB_CODE;
+
+-- ROLLUP(컬럼1, 컬럼2) : 컬럼1만 중간집계
+select DEPT_CODE, JOB_CODE, SUM(SALARY)
+from EMPLOYEE
+group by rollup(DEPT_CODE, JOB_CODE)
+order by DEPT_CODE, JOB_CODE nulls LAST;
+
+-- CUBE(컬럼1, 컬럼2) : 컬럼1, 2 중간집계
+select DEPT_CODE, JOB_CODE, SUM(SALARY)
+from EMPLOYEE
+group by CUBE(DEPT_CODE, JOB_CODE)
+order by DEPT_CODE, JOB_CODE nulls LAST;
+
+-----------------------------------------------------
+/*
+ <집합 연산자>
+ 여러개의 쿼리문을 가지고 하나의 쿼리문을 만드는 연산자
+ 
+ - UNION : 합집합(OR)
+ - INSTERSECT : 교집합(AND)
+ - UNION ALL : 합집합 + 교집합
+ - EXCEPT : 차집합
+ */
+-- 1. UNION 
+-- 부서코드가 D5인 사원 또는 급여가 300만원 초과인 사원의 사번, 사원명, 부서코드, 급여 조회
+-- 부서코드가 D5인 사원
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where DEPT_CODE = 'D5';		-- 6명
+-- 급여가 300만원 초과
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where SALARY >3000000;		-- 8명
+
+-- UNION
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where DEPT_CODE = 'D5'		
+UNION
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where SALARY >3000000
+
+-- OR의 결과와 동일
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where DEPT_CODE = 'D5'	or SALARY >3000000;
+
+-------------------------------------2. INTERSECT
+-- 부서코드가 D5이면서 급여가 300만원 초과인 사원들 조회
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where DEPT_CODE = 'D5'
+intersect 
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where SALARY >3000000;
+-- AND의 결과와 동일
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where DEPT_CODE = 'D5' and SALARY >3000000;
+
+-- 집합연산자 사용시 유의사항
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where DEPT_CODE = 'D5'
+intersect 
+select EMP_ID, EMP_NAME, DEPT_CODE
+from EMPLOYEE
+where SALARY >3000000;
+-- 각 쿼리문의 SELECT절에 작성되는 컬럼의 개수는 동일해야함
+
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where DEPT_CODE = 'D5'
+intersect 
+select EMP_ID, EMP_NAME, DEPT_CODE, BONUS
+from EMPLOYEE
+where SALARY >3000000;
+-- 컬럼의 개수뿐만 아니라 각 컬럼마다 동일한 타입이 기숙되어야 한다
+-- 타입과 개수가 동일해도 같은 컬럼이 아니면 오류는 나지않지만 결과셋이 안나온다
+
+---------------------------3. UNION ALL
+-- 부서코드가 D5이면서 급여가 300만원 초과인 사원들모두(겹치는데이터 중복허용) 조회
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where DEPT_CODE = 'D5'
+union ALL
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where SALARY >3000000
+order by 1;
+
+--------------------------4. EXCEPT
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where DEPT_CODE = 'D5'
+EXCEPT
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where SALARY >3000000
+order by 1;
+
+-- AND 컬럼2의 반대의 결과와 같다
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where DEPT_CODE = 'D5' and SALARY <3000000;
+
+
+
+
+
+
+
 
 
 
