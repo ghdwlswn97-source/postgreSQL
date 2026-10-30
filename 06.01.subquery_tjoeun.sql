@@ -371,6 +371,104 @@ with TOPN_SAL1 as (select DEPT_CODE, ROUND(AVG(SALARY)) as 평균급여
 					LIMIT 2)
 select * from TOPN_SAL1; 
 
+--------------------------------------------------------------------
+/*
+  7. 순위 매기는 함수(WINDOW FUNCTION)
+  	RANK() OVER(정렬기준) | DENSE_RANK() OVER(정렬기준)
+  	- RANK() OVER(정렬기준) : 동일한 순위 이후의 등수를 동일한 인원수 만큼 건너띄고 순위
+  							EX) 공동 1위가 2명이면 그 다음 순위는 3위
+  	- DENSE_RANK() OVER(정렬기준) : 동일한 순위가 있어도 다음 등수는 무조건 1씩 증가
+  							EX) 공동 1위가 2명이면 그 다음 순위는 2위
+ 	>> SELECT절에서만 사용 가능
+*/
+
+-- 급여가 높은 순서대로 순위를 매겨서 조회
+select EMP_NAME, SALARY, RANK() OVER(order by SALARY DESC) as 순위
+from EMPLOYEE;
+
+select EMP_NAME, SALARY, DENSE_RANK() OVER(order by SALARY DESC) as 순위
+from EMPLOYEE;
+
+-- 급여가 상위 5위인 사원의 사원명, 급여, 순위 조회
+/*
+select EMP_NAME, SALARY, RANK() OVER(order by SALARY DESC) as 순위
+from EMPLOYEE
+where RANK() OVER(order by SALARY DESC) <=5;
+*/-- SELECT절에서만 사용 가능
+
+--> INLINE VIEW사용
+select *
+from (select EMP_NAME, SALARY, RANK() OVER(order by SALARY DESC) as 순위
+		from EMPLOYEE)
+where 순위 <= 5;
+
+-->> WITH 사용
+with TOPN_SAL as (select EMP_NAME, SALARY, RANK() OVER(order by SALARY DESC) as 순위
+		from EMPLOYEE)
+select *
+from TOPN_SAL
+where 순위 <= 5;
+
+-->> TOP-N 분석
+/*
+ 원하는 기능			PostgreSQL문법
+ -----------------------------------------
+ 상위 5개				LIMIT 5
+ 상위 3개				LIMIT 3
+ 상위 6~10위			LIMIT 5 OFFSET 5
+ 결과에 순번 출력 		ROW_NUMBER() OVER(정렬기준)
+ 표준 SQL 상위 5개		FETCH FIRST 5 ROWS ONLY
+ */
+
+-- 급여가 높은 상위 5명 조회
+select EMP_NAME, SALARY
+from EMPLOYEE
+order by SALARY desc
+limit 5;
+
+-- 순번까지 출력
+select ROW_NUMBER() OVER(order by SALARY DESC) as 순위, EMP_NAME, SALARY
+from EMPLOYEE
+order by SALARY desc
+limit 5;
+
+-- 가장 최근에 입사한 사원 5명의 사원명, 급여, 입사일 조회
+select EMP_NAME, SALARY, HIRE_DATE
+from EMPLOYEE
+order by HIRE_DATE desc
+LIMIT 5;
+
+-- 부서별 평균급여가 높은 상위 3개 부서 조회
+select DEPT_CODE, ROUND(AVG(SALARY)) as 평균급여
+from EMPLOYEE
+group by DEPT_CODE
+order by 평균급여 desc
+limit 3;
+
+-- 급여가 높은 상위 6~8위 조회
+select EMP_NAME, SALARY
+from EMPLOYEE
+order by SALARY desc
+limit 4 offset 5;
+
+-- 급여가 낮은 하위 4위 조회
+select EMP_NAME, SALARY
+from EMPLOYEE
+order by SALARY 
+limit 4;		-- 4위 2명이어도 4행만 가져옴
+-- 정확히 4위까지 가져오려면 INLINE VIEW 사용
+select *
+from (select EMP_NAME, SALARY, DENSE_RANK() OVER(order by SALARY ) as 순위
+		from EMPLOYEE)
+where 순위 <= 4;	
+
+-- 2) 집계(GROUP BY) 후 다른 테이블과 조인(JOIN)할 때
+-- 부서별 평균급여를 구한 뒤에 부서 정보와 조인
+select *
+from (select DEPT_CODE, ROUND(AVG(SALARY)) as 평균급여
+		from EMPLOYEE
+		group by DEPT_CODE)
+join DEPARTMENT on (DEPT_CODE=DEPT_ID);
 
 
 
