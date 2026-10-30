@@ -253,7 +253,124 @@ where (DEPT_CODE, JOB_CODE) = (select DEPT_CODE, JOB_code
 -- 지민재 사원과 같은 직급코드, 같은 사수를 가지고 있는 사원들의 사번, 사원명, 직급코드, 사수번호 조회
 select EMP_ID, EMP_NAME, JOB_CODE, MANAGER_ID
 from EMPLOYEE
-where ()
+where JOB_CODE = (select JOB_CODE
+					from EMPLOYEE
+					where EMP_NAME ='지민재')
+	and MANAGER_ID=(select manager_id 
+						from EMPLOYEE
+						where EMP_NAME='지민재');
+				
+-- >> 다중열 서브쿼리로
+select EMP_ID, EMP_NAME, JOB_CODE, MANAGER_ID
+from EMPLOYEE
+where (JOB_CODE, MANAGER_ID) = (select JOB_CODE, manager_id 
+									from EMPLOYEE
+									where EMP_NAME ='지민재');
+
+-----------------------------------------------------------
+/*
+ 4. 다중행 다중열 서브쿼리
+ 	: 여러행 여러열
+*/
+-- 1) 각 직급별 최소급여 금액을 받는 사원들의 사번, 사원명, 직급코드, 급여 조회
+-- 1.1 각 직급별 최소급여 금액과 직급코드 조회
+select JOB_CODE, MIN(SALARY)
+from EMPLOYEE
+group by JOB_CODE
+order by 1;
+
+select EMP_ID, EMP_NAME, JOB_CODE, SALARY
+from EMPLOYEE
+group by JOB_CODE = 'J1' and SALARY =8000000
+	  or JOB_CODE = 'J2' and SALARY = 3700000
+	  .
+	  .
+	  .;
+
+
+select EMP_ID, EMP_NAME, JOB_CODE, SALARY
+from EMPLOYEE
+where (JOB_CODE, SALARY) = ('J1', 8000000)
+	or (JOB_CODE, SALARY) = ('J2', 3700000)
+	...;
+
+
+select EMP_ID, EMP_NAME, JOB_CODE, SALARY
+from EMPLOYEE
+where (JOB_CODE, SALARY) in (('J1', 8000000), ('J2', 3700000)..)
+
+-->> 서브쿼리 적용
+select EMP_ID, EMP_NAME, JOB_CODE, SALARY
+from EMPLOYEE
+where (JOB_CODE, SALARY) in (select JOB_CODE, MIN(SALARY)
+								from EMPLOYEE
+								group by JOB_CODE)
+order by 3;
+
+-- 2) 각 부서별 최고 급여를 받는 사원들의 사번, 사원명, 부서코드, 급여 조회
+select EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+from EMPLOYEE
+where (DEPT_CODE, SALARY) in (select DEPT_CODE, MAX(SALARY)
+								from EMPLOYEE
+								group by DEPT_CODE)
+order by 3;
+
+-----------------------------------------------------------
+/*
+ 5. INLINE VIEW
+ 	FROM절에 서브쿼리 작성
+ 	서브쿼리를 수행할 결과를 마치 테이블처럼 사용
+ 	
+ 	* PostgreSQL 16 버전 이상은 인라인뷰에 별칭을 안붙여도 알아서 매칭
+ 	* PostgreSQL 16 버전 미만 이거나 다른 DBMS(My SQL등)은 인라인뷰에 반드시 별칭을 붙여둬야된다
+*/
+-- 사원들의 사번, 이름, 보너스포함한 연봉(별칭부여), 부서코드 조회
+-- 단, 보너스 포함 연봉이 4000만원 이상인 사원들만 조회
+select EMP_ID, EMP_NAME, SALARY*(1+coalesce(BONUS,0))*12 as 연봉, DEPT_CODE
+from EMPLOYEE
+where SALARY*(1+coalesce(BONUS,0))*12 >=40000000;
+
+--WHERE절에 별칭을 사용하려면 INLINE VIEW사용
+select *
+from (select EMP_ID, EMP_NAME, SALARY*(1+coalesce(BONUS,0))*12 as 연봉, DEPT_CODE
+		from EMPLOYEE)
+where 연봉 >=40000000;
+
+--select EMP_ID, EMP_NAME, SALARY*(1+coalesce(BONUS,0))*12 as 연봉, DEPT_CODE
+--from (select SALARY*(1+coalesce(BONUS,0))*12
+--		from EMPLOYEE
+--		where 연봉>40000000);
+
+-- INLINE VIEW 서브쿼리의 컬럼명만 메인 쿼리에서 호출가능
+
+
+-----------------------------------------------------------
+/*
+ 6. WITH 
+ 	서브쿼리에 이름을 붙여주고 인라인 뷰로 사용시 서브쿼리의 이름으로 FROM 절에 기술가능
+ 	
+ 	WITH 이름(마음대로) AS (서브쿼리)
+ 	최종실행메인쿼리;
+ 	
+ 	WITH 이름(마음대로) AS (서브쿼리)
+ 			이름(마음대로) AS (서브쿼리)
+ 	최종실행메인쿼리;
+ */
+with TOPN_SAL1 as (select DEPT_CODE, ROUND(AVG(SALARY)) as 평균급여
+					from EMPLOYEE
+					group by dept_code 
+					order by 2 desc)
+select *
+from TOPN_SAL1
+limit 2;
+
+with TOPN_SAL1 as (select DEPT_CODE, ROUND(AVG(SALARY)) as 평균급여
+					from EMPLOYEE
+					group by dept_code 
+					order by 2 desc
+					LIMIT 2)
+select * from TOPN_SAL1; 
+
 
 
 
