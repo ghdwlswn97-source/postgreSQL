@@ -54,7 +54,8 @@ group by  case when SUBSTR(EMP_NO, 8, 1) IN('1','3') then '남성'
 -- GROUP BY 절에 여러 컬럼 기술 가능
 select DEPT_CODE, JOB_CODE, COUNT(*), SUM(SALARY)
 from EMPLOYEE
-group by DEPT_CODE, JOB_CODE;
+group by DEPT_CODE, JOB_CODE
+order by 1;
 
 -- 입사년도별 급여의 합계
 select extract(year from HIRE_DATE) as 입사년도, SUM(SALARY) as 급여합계
@@ -163,8 +164,8 @@ order by DEPT_CODE, JOB_CODE nulls LAST;
  여러개의 쿼리문을 가지고 하나의 쿼리문을 만드는 연산자
  
  - UNION : 합집합(OR)
- - INSTERSECT : 교집합(AND)
- - UNION ALL : 합집합 + 교집합
+ - INTERSECT : 교집합(AND)
+ - UNION ALL : 합집합 + 교집합(중복 부분 두번 조회)
  - EXCEPT : 차집합
  */
 -- 1. UNION 

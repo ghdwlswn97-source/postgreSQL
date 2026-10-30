@@ -8,9 +8,9 @@
  	=> 관계형 데이터베이스에서 SQL문을 이용하여 테이블간의 '관계'를 맺는 방법
  	
  				[JOIN 용어 정리]
- 1. 내부조인(INNER JOIN) => JOIN ON / JOIN USING
+ 1. 내부조인(INNER JOIN) => JOIN ON / JOIN USING		-> NULL값 조회X
  	자연조인(NATURAL JOIN) => 동일한 컬럼을 자동 조인
- 2. 외부조인(OUTER JOIN)
+ 2. 외부조인(OUTER JOIN)								-> NULL값도 조회
  		- 왼쪽 외부 조인(LEFT OUTER JOIN / LEFT JOIN)
  		- 오른쪽 외부 조인(RIGHT OUTER JOIN / RIGHT JOIN)
  		- 전체 외부 조인(FULL OUTER JOIN / FULL JOIN)
@@ -37,7 +37,7 @@ from DEPARTMENT;
 -- EMPLOYEE : DEPT_CODE / DEPARTMENT : DEPT_ID
 select EMP_ID, EMP_NAME, DEPT_CODE, DEPT_TITLE
 from EMPLOYEE, DEPARTMENT;
--- DEPARTMENT 행당 23명씩 TOTAL 207행이 나온다
+-- DEPARTMENT 각 행당 23명씩 TOTAL 207행이 나온다
 
 select EMP_ID, EMP_NAME, DEPT_CODE, DEPT_TITLE
 from EMPLOYEE
@@ -48,10 +48,11 @@ join DEPARTMENT on (DEPT_CODE = DEPT_ID);
 -- 2) 연결할 두 컬럼명이 같은 경우()
 --		=> JOIN ON 또는 JOIN USING 구문 사용 가능	
 -- EMPLOYEE : JOB_CODE / JOB : JOB_CODE
---select EMP_ID, EMP_NAME, JOB_CODE, JOB_NAME
---from EMPLOYEE 
---join JOB on (JOB_CODE= JOB_CODE);		-- 오류 발생
--- JOB_CODE가 어느테이블의 JOB_CODE인지 알 수 없어서
+/*
+select EMP_ID, EMP_NAME, JOB_CODE, JOB_NAME
+from EMPLOYEE 
+join JOB on (JOB_CODE= JOB_CODE);		-- 오류 발생 --> JOB_CODE가 어느테이블의 JOB_CODE인지 알 수 없어서
+*/
 
 -- 해결방법 1) JOIN ON + 테이블을 명시(별칭도 가능)
 select EMP_ID, EMP_NAME, EMPLOYEE.JOB_CODE, JOB_NAME
@@ -133,12 +134,12 @@ order by 2;		-- 2번째 컬럼을 기준으로 오름차순
 -- 1) LEFT [OUTER] JOIN 
 select EMP_NAME, DEPT_CODE, DEPT_TITLE, SALARY, SALARY*12 as 연봉
 from EMPLOYEE
-left join DEPARTMENT on (DEPT_CODE = DEPT_ID);
+left join DEPARTMENT on (DEPT_CODE = DEPT_ID);		--> EMPLOYEE테이블을 기준으로 잡고있어 부서 존재 여부와 상관 없이 23명이 다 조회
 
 -- 2) RIGHT [OUTER] JOIN
 select EMP_NAME, DEPT_CODE, DEPT_ID, DEPT_TITLE, SALARY, SALARY*12 as 연봉
 from EMPLOYEE
-right join DEPARTMENT on (DEPT_CODE = DEPT_ID);
+right join DEPARTMENT on (DEPT_CODE = DEPT_ID);		--> DEPARTMENT테이블이 기준, 부서에 등록된 사원의 존재 여부와 상관없이 모든 부서 조회
 
 -- 3) FULL [OUTER] JOIN
 select EMP_NAME, DEPT_CODE, DEPT_TITLE, SALARY, SALARY*12 as 연봉
@@ -237,6 +238,15 @@ left join location on (LOCATION_ID = LOCAL_CODE);
 ---------------------실습문제------------------------
 -- 1. 사번, 사원명, 부서명, 지역명, 국가명 조회
 -- (EMPLOYEE,DEPARTMENT, LOCATION, NATIONAL)
+/*
+ 	테이블			컬럼				컬럼				컬럼				컬럼				컬럼
+ EMPLOYEE		DEPT_CODE											SALARY			JOB_CODE
+ DEPARTMENT		DEPT_ID			LOCATION_ID							
+ LOCATION 						LOCAL_CODE		NATIONAL_CODE
+ NATIONAL										NATIONAL_CODE
+ SAL_GRADE															SAL_LEVEL
+ JOB																				JOB_CODE
+ */
 select EMP_ID, EMP_NAME, DEPT_TITLE, LOCAL_NAME, NATIONAL_NAME
 from employee 
 join DEPARTMENT on (DEPT_CODE = DEPT_ID)
@@ -252,6 +262,12 @@ join JOB USING (JOB_CODE)
 join location on (LOCATION_ID = LOCAL_CODE)
 join NATIONAL USING (NATIONAL_CODE)
 join sal_grade on (SALARY between MIN_SAL and MAX_SAL);
-
-
+-- 전체사원 조회
+select EMP_ID, EMP_NAME, DEPT_TITLE, JOB_NAME, LOCAL_NAME, NATIONAL_NAME, SAL_LEVEL
+from EMPLOYEE
+left join DEPARTMENT on (DEPT_CODE=DEPT_ID)
+left join JOB USING (JOB_CODE)
+left join location on (LOCATION_ID = LOCAL_CODE)
+left join NATIONAL USING (NATIONAL_CODE)
+left join sal_grade on (SALARY between MIN_SAL and MAX_SAL);
 
