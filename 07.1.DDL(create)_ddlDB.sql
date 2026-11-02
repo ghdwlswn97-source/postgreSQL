@@ -444,6 +444,117 @@ where GRADE_CODE = 10;
 
 insert into MEM_GRADE VALUES(10, '일반회원');
 
+create table MEM2(
+	MEM_NO numeric primary key,
+	MEM_ID VARCHAR(20) not null unique,
+	MEM_PWD VARCHAR(20) not null, 
+	MEM_NAME VARCHAR(20) not null,
+	GENDER CHAR(1) CHECK(GENDER in ('남','여')),
+	PHONE VARCHAR(13),
+	EMAIL VARCHAR(30) ,
+	GRADE_ID numeric references MEM_GRADE on delete CASCADE
+);
+insert into MEM2 VALUES(1, 'user01', 'pwd01', '홍길동','남',null,null,NULL);
+insert into MEM2 VALUES(2, 'user02', 'pwd02', '김길동','남',null,null,10);
+insert into MEM2 VALUES(3, 'user03', 'pwd03', '최길동','남',null,null,20);	
+insert into MEM2 VALUES(4, 'user04', 'pwd04', '박순희','여',null,null,10);	
+
+delete from mem_grade
+where GRADE_CODE = 10;
+
+--------------------------------------------------------------
+/*
+ * DEFAULT(기본값) -> 제약조건 아님
+   컬럼의 값을 넣을 때 NULL이 아닌 기본값을 넣고자 할 때 기본값을 미리 세팅해 둘 수 있다.
+   
+   컬럼명 자료형 DERAULT 값 [제약조건]
+   	--> 다른 제약조건보다 앞에 기술해야 됨
+ */
+
+create table member5(
+	MEM_NO numeric primary key,
+	MEM_NAME VARCHAR(20) not null,
+	MEM_AGE numeric,
+	HOBBY VARCHAR(20) default '없음',
+	MEM_DATE DATE default CURRENT_DATE
+);
+
+insert into member5 VALUES(1, '고길동', 20, '운동', '2026-11-01');
+insert into member5 VALUES(2, '왕길동', NULL, NULL, NULL);
+insert into member5 VALUES(3, '강길동', NULL, DEFAULT, DEFAULT);
+
+insert into MEMBER5(MEM_NO, MEM_NAME) VALUES(4, '최길동');
+--=================================================================
+-- tjoeumDB로 바꿔서 실행
+/*
+ <SUBQUERY를 이용한 테이블 생성>
+ 테이블을 복사하는 개념
+ 
+ [표현식]
+ CREATE TABLE 테이블명
+ AS 서브쿼리;
+ */
+-- EMPLOYEE 테이블의 컬럼명, 자료형, 데이터 복사
+create table EMPLOYEE_COPY
+as select *
+from EMPLOYEE;
+-- 컬럼, 데이터값 복사 가능
+-- 제약조건에서는 NOT NULL 복사 불가
+-- DEFAULT, CONNENT 안됨
+
+-- EMPLOYEE테이블의 구조만 복사
+create table EMPLOYEE_COPY2
+as select *
+from EMPLOYEE
+where 1=0;
+
+create table EMPLOYEE_COPY3
+as select EMP_ID, EMP_NAME, SALARY, BONUS
+from EMPLOYEE
+where 1=0;
+
+create table EMPLOYEE_COPY4
+as select EMP_ID, EMP_NAME, SALARY, SALARY*12 연봉
+from EMPLOYEE
+where 1=0;
+
+-------------------------------------------------
+/*
+ * 테이블을 다 생성한 후 제약조건 추가
+ 	ALTER TABLE 테이블명 변경할내용;
+ 	
+ 	- PRIMARY KEY : ALTER TABLE 테이블명 ADD PRIMARY KEY(컬럼명)
+ 	- FOREIGN KEY : ALTER TABLE 테이블명 ADD FOREIGN KEY(컬럼명) REFERENCES 참조할테이블명 [(참조할컬럼명)];
+ 	- UNIQUE : ALTER TABLE 테이블명 ADD UNIQUE(컬럼명)
+ 	- CHECK : ALTER TABLE 테이블명 ADD CHECK(컬럼에 대한 조건식)
+ 	- NOT NULL : ALTER TABLE 테이블명 ALTER COLUMN 컬럼명 SET NOT NULL
+ */
+--EMPLOYEE_COPY테이블에 PRIMARY KEY 제약조건 추가
+alter table EMPLOYEE_COPY add primary key(EMP_ID);
+
+-- EMPLOYEE테이블에 DEPT_CODE에 외래키제약조건 추가
+alter table EMPLOYEE add foreign KEY(DEPT_CODE) references DEPARTMENT;
+
+alter table EMPLOYEE_COPY alter column ENT_YN set DEFAULT 'N';
+
+-- EMPLOYEE_COPY 테이블에 EMP_ID, EMP_NO의 컬럼에 COMMENT 넣기
+comment on column EMPLOYEE_COPY.EMP_ID is '사원아이디';
+comment on column EMPLOYEE_COPY.EMP_NO is '사원주민번호';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
