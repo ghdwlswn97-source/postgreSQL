@@ -449,7 +449,7 @@ limit 3;
 select EMP_NAME, SALARY
 from EMPLOYEE
 order by SALARY desc
-limit 4 offset 5;
+limit 3 offset 5;
 
 -- 급여가 낮은 하위 4위 조회
 select EMP_NAME, SALARY
