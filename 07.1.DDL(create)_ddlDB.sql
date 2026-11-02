@@ -345,18 +345,104 @@ insert INTO TB_LIKE VALUES(1, 'B', CURRENT_DATE);
 insert INTO TB_LIKE VALUES(2, 'B', CURRENT_DATE);
 insert INTO TB_LIKE VALUES(1, 'B', CURRENT_DATE);
 
+-------------------------------------------------
+-- 회원등급에 대한 데이터를 따로 보관하는 테이블 
+create table MEM_GRADE(
+	GRADE_CODE numeric PRIMARY key,
+	GRADE_NAME VARCHAR(30) not null
+);
+insert into MEM_GRADE VALUES(10, '일반회원');
+insert into MEM_GRADE VALUES(20, '우수회원');
+insert into MEM_GRADE VALUES(30, '특별회원');
 
+create table MEM(
+	MEM_NO numeric primary key,
+	MEM_ID VARCHAR(20) not null unique,
+	MEM_PWD VARCHAR(20) not null,
+	MEM_NAME VARCHAR(20) not null,
+	GENDER CHAR(1) CHECK(GENDER in ('남','여')),
+	PHONE VARCHAR(13),
+	EMAIL VARCHAR(30),
+	GRADE_ID NUMERIC
+);
 
+insert into MEM VALUES(1, 'user01', 'pwd01', '홍길동','남',null,null,NULL);
+insert into MEM VALUES(2, 'user02', 'pwd02', '김길동','남',null,null,10);
+insert into MEM VALUES(3, 'user03', 'pwd03', '최길동','남',null,null,50);
+-- 유효한 회원등급번호가 아님에도 입력됨(원래 입력되면 안됨)
 
+---------------------------------------------------------------
+/*
+ * FOREIGN KEY(외래키) 제약조건
+   다른 테이블에 존재하는 값만 들어와야되는 특정 컬럼에 부여하는 제약조건
+   
+  >> 컬럼 레벨 방식
+  	 컬럼명 자료형 REFERENCES 참조할테이블명(참조할컬럼명)
+  	 컬럼명 자료형 [CONTRAINT 제약조건명] REFERENCES 참조할테이블명[(참조할컬럼명)]
+  	 
+  >> 테이블 레벨 방식	 
+  	 FOREIGN KEY(컬럼명) REFERENCES 참조할테이블명[(참조할컬럼명)]
+  	 [CONTRAINT 제약조건명] FOREIGN KEY(컬럼명) REFERENCES 참조할테이블명
+ */
+create table MEM2(
+	MEM_NO numeric primary key,
+	MEM_ID VARCHAR(20) not null UNIQUE,
+	MEM_PWD VARCHAR(20) not null,
+	MEM_NAME VARCHAR(20) not null,
+	GENDER CHAR(1) CHECK(GENDER in ('남','여')),
+	PHONE VARCHAR(13),
+	EMAIL VARCHAR(30),
+	GRADE_ID numeric references MEM_GRADE(GRADE_CODE)
+);
+insert into MEM2 VALUES(1, 'user01', 'pwd01', '홍길동','남',null,null,NULL);
+insert into MEM2 VALUES(2, 'user02', 'pwd02', '김길동','남',null,null,10);
+insert into MEM2 VALUES(3, 'user03', 'pwd03', '최길동','남',null,null,50);		-- 오류 
+-- MEM_GRADE(부모테이블) -|-----<- MEM2(자식테이블)
 
+--> 이때 부모테이블에서 데이터값을 삭제할 경우 문제 발생
+-- 데이터 삭제 : DELETE FROM 테이블명 WHERE 조건;
 
+--> MEM_GRADE테이블에서 10번 등급 삭제
+delete from MEM_GRADE 
+where GRADE_CODE = 10;
+-- 자식테이블에 10이라는 값을 사용하고 있어서 삭제 불가
 
+delete from MEM_GRADE 
+where GRADE_CODE = 20;
+-- 자식테이블에 20이라는 값을 사용하고 있지않기 때문에 삭제 됨
 
+------------------------------------------------------------
+/*
+ * 자식테이블 생성시 외래키 제약조건 부여할 때 삭제 옵션 지정 가능
+   - 삭제 옵션 : 부모테이블의 데이터를 삭제시 그 데이터를 사용하고 있는 자식테이블의 값을 어떻게 처리할 지
+   
+   > ON DELETE RESTRICT(기본값) : 자식에 데이터를 쓰고 있으면 부모 삭제 안됨
+   > ON DELETE SET NULL : 자식이 데이터를 쓰고 있으면 자식의 데이터값을 NULL로 변경하고 부모값 삭제
+   > ON DELETE CASCADE : 자식이 데이터를 쓰고 있으면 자식도 삭제(행), 부모도 삭제 
+ */
 
+drop table if exists MEM;
+drop table if exists MEM2;
 
+create table MEM(
+	MEM_NO numeric primary key,
+	MEM_ID VARCHAR(20) not null unique,
+	MEM_PWD VARCHAR(20) not null, 
+	MEM_NAME VARCHAR(20) not null,
+	GENDER CHAR(1) CHECK(GENDER in ('남','여')),
+	PHONE VARCHAR(13),
+	EMAIL VARCHAR(30) ,
+	GRADE_ID numeric references MEM_GRADE on delete set NULL
+);
+insert into MEM VALUES(1, 'user01', 'pwd01', '홍길동','남',null,null,NULL);
+insert into MEM VALUES(2, 'user02', 'pwd02', '김길동','남',null,null,10);
+insert into MEM VALUES(3, 'user03', 'pwd03', '최길동','남',null,null,20);	
+insert into MEM VALUES(4, 'user04', 'pwd04', '박순희','여',null,null,10);	
 
+delete from MEM_GRADE
+where GRADE_CODE = 10;
 
-
+insert into MEM_GRADE VALUES(10, '일반회원');
 
 
 
