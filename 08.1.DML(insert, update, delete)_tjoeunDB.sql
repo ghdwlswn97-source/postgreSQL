@@ -229,13 +229,36 @@ update EMPLOYEE
 set DEPT_CODE = 'D0'
 where EMP_NAME = '이정하';
 
+--================================================
+/*
+ 3. DELETE
+ 	테이블의 데이터를 행단위로 삭제하는 구문
+ 	
+ 	[표현법]
+ 	DELECT FROM 테이블명
+ 	[WHERE 조건];		-- 조건을 안 넣으면 테이블 전체 행이 삭제됨
+ */
 
+DELETE from EMPLOYEE_COPY
+where EMP_ID = '201';
 
+select * from EMPLOYEE_COPY;
 
+-- 외래키 때문에 삭제 거부됨
+delete from DEPARTMENT
+where DEPT_ID = 'D1';
 
-
-
-
+/*
+ * TRUNCATE : 테이블 전체 행을 삭제할 때 사용하는 구문
+ 	DELETE보다 수행속도가 빠름
+ 	
+ 	 [표현법]
+ 	 TRUNCATE TABLE 테이블명; 
+ */
+truncate table EMP_SALARY;
+truncate table EMP_01;
+select * from EMP_SALARY;
+rollback;
 
 
 
