@@ -120,6 +120,116 @@ insert into EMP_MANAGER (EMP_ID, EMP_NAME, MANAGER_ID)
 create table DEPT_COPY
 as select * from DEPARTMENT;
 
+-- D9 부서의 부서명을 '전략기획팀'으로 수정
+update DEPT_COPY
+set DEPT_TITLE = '전략기획팀'		-- WHERE절 작성 안하면 모든 부서명이 바뀜
+
+update DEPT_COPY
+set DEPT_TITLE = '전략기획팀'
+where DEPT_ID ='D9';
+COMMIT;
+
+-- 복사본 테이블 생성
+create table EMP_SALARY
+as select EMP_ID, EMP_NAME, DEPT_CODE, SALARY, BONUS
+	from EMPLOYEE;
+commit;
+
+-- 지민재 사원의 급여를 200만원으로 변경
+update EMP_SALARY 
+set SALARY = 2000000
+where EMP_NAME = '지민재';
+
+select * from EMP_SALARY;
+
+-- 이정하 사원의 급여를 700만원으로 바꾸고 보너스를 0.2로 변경
+update EMP_SALARY
+set SALARY=7000000,
+	BONUS =0.2
+where EMP_NAME='이정하';
+--> select * from EMP_SALARY; 또 작성할 필요없이 
+--	위에있는 select * from EMP_SALARY; 실행
+
+-- 전체사원의 급여를 10% 인상
+update EMP_SALARY
+set SALARY = SALARY*1.1;
+commit;
+
+update EMP_SALARY
+set SALARY=7000000,
+	BONUS =0.2
+where EMP_NAME='박서준';
+
+------------------------
+/* 
+  - UPDATE시 서브쿼리 사용 가능
+	[표현법]
+	UPDATE 테이블명
+	SET 컬럼명 = (서브쿼리)
+	WHERE 조건;
+*/
+-- 정훈 사원의 급여와 보너스를 조정연 사원의 급여와 보너스로 변경
+-- 단일 컬럼 서브쿼리
+update EMP_SALARY
+set SALARY = (select salary 
+				from EMP_SALARY
+				where EMP_NAME ='조정연'),
+	BONUS = (select BONUS 
+				from EMP_SALARY
+				where EMP_NAME ='조정연')
+where EMP_NAME = '정훈';
+select * from EMP_SALARY;
+
+-- 다중열 서브쿼리
+update EMP_SALARY
+set (SALARY, BONUS)= (select salary, BONUS
+						from EMP_SALARY
+						where EMP_NAME ='조정연')
+where EMP_NAME ='황승현';
+
+-- 전지연, 선우진, 현준혁, 배윤서, 전재민 사원들의 보너스와 급여를 강태윤 사원과 같은 금액으로 변경
+update emp_salary 
+set (SALARY, BONUS) = (select SALARY, bonus 
+						from emp_salary 
+						where EMP_NAME ='강태윤')
+where EMP_NAME in ('전지연', '선우진','현준혁','배윤서','전재민');
+
+-- ASIA2 지역에 근무하는 사원들의 보너스를 0.6으로 변경
+-- ASIA2 지역에 근무하는 사원 조회
+select EMP_ID, EMP_NAME
+from EMP_SALARY
+join DEPARTMENT on (DEPT_CODE=DEPT_ID)
+join location on (LOCATION_ID=LOCAL_CODE)
+where LOCAL_NAME like 'ASIA2';
+
+update EMP_SALARY
+set BONUS = 0.6
+where EMP_ID IN(select EMP_ID
+				from EMP_SALARY
+				join DEPARTMENT on (DEPT_CODE=DEPT_ID)
+				join location on (LOCATION_ID=LOCAL_CODE)
+				where LOCAL_NAME like 'ASIA2');
+
+commit;
+
+-------------------------------------------------------------
+-- UPDATE시에도 해당 컬럼에 대한 제약조건에 위배되면 안됨
+-- 사번이 200번인 사원의 이름을 NULL로 변경
+update EMPLOYEE
+set EMP_NAME=null
+where EMP_ID='200';
+
+-- PRIMARY KEY 제약조건 위배 오류
+update EMPLOYEE
+set EMP_ID='200'
+where EMP_NAME ='이정하';
+
+-- 외래키오류
+update EMPLOYEE
+set DEPT_CODE = 'D0'
+where EMP_NAME = '이정하';
+
+
 
 
 
