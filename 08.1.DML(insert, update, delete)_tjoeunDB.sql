@@ -29,22 +29,96 @@ insert into EMPLOYEE_COPY VALUES(300, '더조은', '031103-3452576', 'tjoeun@goo
 insert into EMPLOYEE_COPY(EMP_ID, EMP_NAME, EMP_NO, JOB_CODE, HIRE_DATE)
 values (301, '이티어','051111-4567895', 'J5', CURRENT_DATE);
 
+-- 컬럼을 제시할 때 순서와 상관없이 해도 됨
+-- 그러나 데이터값은 제시한 컬럼의 순서와 동일해야 됨
+insert into EMPLOYEE_COPY( HIRE_DATE, JOB_CODE, EMP_NO,EMP_ID, EMP_NAME)
+values (CURRENT_DATE, 'J5','051111-4567895',303, '이티어' );
+
 -- NOT NULL인 JOB_CODE에 데이터값 입력 안하면 오류
 insert into EMPLOYEE_COPY(EMP_ID, EMP_NAME, EMP_NO, JOB_CODE, HIRE_DATE)
 values (302, '황반가','040111-4567895', CURRENT_DATE);
 
+-----------------------------------------------------------------------
+/*
+ 	3) INSERT INTO 테이블명(서브쿼리);
+ 		VALUES로 값을 직접 명시하는 대신에 서브쿼리로 조회된 결과값을 모두 INSERT함
+ 		여러행도 가능
+ * */
+-- EMP_01 테이블생성
+create table EMP_01(
+	EMP_ID VARCHAR(3),
+	EMP_NAME VARCHAR(20),
+	DEPT_NAME VARCHAR(35)
+);
+
+-- 전체 사원들의 사번, 이름, 부서명 조회
+select EMP_ID, EMP_NAME, DEPT_TITLE
+from EMPLOYEE
+left join DEPARTMENT on (DEPT_CODE=DEPT_ID);
+
+-- EMP_01 테이블에 데이터 삽입
+insert into EMP_01
+select EMP_ID, EMP_NAME, DEPT_TITLE
+from EMPLOYEE
+left join DEPARTMENT on (DEPT_CODE=DEPT_ID);
+
+-----------------------------------------------------
+/*
+ 	4) WITH절로 두개 이상의 테이블에 한꺼번에 INSERT
+ 		WITH절 안에서 INSERT, UPDQTE, DELETE 같은 데이터 변경 작업도 수행 가능
+ 		이름 CTE(DATA-MODIFYING)라고 부름
+*/
+-- 테이트할 테이블 2개 생성
+create table EMP_DEPT
+as select EMP_ID, EMP_NAME, DEPT_CODE, HIRE_DATE
+	from EMPLOYEE
+	where 1=0;
+
+create table EMP_MANAGER
+as select EMP_ID, EMP_NAME, MANAGER_ID
+	from EMPLOYEE
+	where 1=0;
+
+-- 부서코드가 D1인 사원들의 사번, 이름, 부서코드, 입사일, 사수사번 조회
+select EMP_ID, EMP_NAME, DEPT_CODE, HIRE_DATE, MANAGER_ID
+from EMPLOYEE
+where DEPT_CODE='D1';
+
+with DATA_INFO as (
+	select EMP_ID, EMP_NAME, DEPT_CODE, HIRE_DATE, MANAGER_ID
+	from EMPLOYEE
+	where DEPT_CODE='D1'
+),
+INFO1 as (
+	insert into EMP_DEPT (EMP_ID, EMP_NAME, DEPT_CODE, HIRE_DATE)
+	select EMP_ID, EMP_NAME, DEPT_CODE, HIRE_DATE
+	from DATA_INFO
+)
+--INFO2 as (
+--	insert into EMP_NAME (EMP_ID, EMP_NAME, MANAGER_ID)
+--	select EMP_ID, EMP_NAME, MANAGER_ID
+--	from DATA_INFO
+--);
+
+insert into EMP_MANAGER (EMP_ID, EMP_NAME, MANAGER_ID)
+	select EMP_ID, EMP_NAME, MANAGER_ID from DATA_INFO;
 
 
-
-
-
-
-
-
-
-
-
-
+--========================================
+/*
+ 2. UPDATE
+  	테이블에 기록되어 있는 기존 데이터를 수정하는 구문
+  	
+  	[표현법]
+  	UPDATE 테이블명
+  	SET 컬럼명 = 바꿀값, 
+  		컬럼명 = 바꿀값,
+  		...
+  	[WHERE 조건];		--> 주의 : 생략하면 전체 모든 행의 데이터가 변경됨
+ */
+-- 테이블 생성
+create table DEPT_COPY
+as select * from DEPARTMENT;
 
 
 
