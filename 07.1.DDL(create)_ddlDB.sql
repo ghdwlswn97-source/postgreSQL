@@ -28,21 +28,21 @@
  	 	1. 문자형 데이터 타입
  	 		데이터타입			설명				예시
  	 		-----------------------------------------
- 	 		CHAR(n)		고정길이 문자열		CHAR(3)
- 	 		VARCHAR(n)	최대 n글자까지 저장	VARCHAR(20)		--> 가변길이(들어오는 글자에따라 저장공간이 됨)
+ 	 		CHAR(n)		고정길이 문자열		CHAR(3)		--> 한글자가 들어와도 3글자(지정글자수) 자리차지
+ 	 		VARCHAR(n)	최대 n글자까지 저장	VARCHAR(20)		--> 가변길이(들어오는 글자수 만큼 저장공간 차지)
  	 		VARCHAR		길이제한 없이 저장	VARCHAR
  	 		TEXT		길이제한 없이 저장	TEXT
  	 		
  	 	2. 숫자형 데이터 타입
  	 		데이터타입								설명				예시
- 	 		-------------------------------------------------------	
- 	 		NUMERIC([전체자리수, 소수자리수])		정확한 숫자 저장		NUMERIC
- 	 		SERIAL							자동 증가하는 정수 	SERIAL
+ 	 		------------------------------------------------------------	
+ 	 		NUMERIC([전체자리수, 소수자리수])		정확한 숫자 저장			NUMERIC
+ 	 		SERIAL							자동 증가하는 정수 		SERIAL
  	 		
  	 	3. 날짜 데이터 타입
  	 		데이터타입		설명				예시
  	 		-------------------------------------------------------	
- 	 		DATE		날짜 저장		2026-11-02
+ 	 		DATE		날짜 			2026-11-02
  	 		TIMESTAMP	날짜+시간		2026-11-02 12:42:43
  	 		
  	 	4. 기타 데이터 타입
@@ -53,6 +53,7 @@
  	 			FALSE	거짓
  	 			NULL	알 수 없음, 값이 없음	
 */
+
 -- 회원 테이블 MEMBER 생성
 create table MEMBER(
 	MEM_NO numeric,
@@ -65,6 +66,7 @@ create table MEMBER(
 	MEM_DATE DATE
 );
 
+-- GENDER 제외 글자 제한 없음
 create table MEMBER2(
 	MEM_NO numeric,
 	MEM_ID VARCHAR,
@@ -76,6 +78,7 @@ create table MEMBER2(
 	MEM_DATE DATE
 );
 
+-- TEXT, VARCHAR는 기능이 비슷해서 바꿔써도 무방
 create table MEMBER3(
 	MEM_NO numeric,
 	MEM_ID TEXT,
@@ -87,7 +90,7 @@ create table MEMBER3(
 	MEM_DATE DATE
 );
 
-
+-- NUMERIC 자리수 지정
 create table MEMBER4(
 	MEM_NO SERIAL,
 	MEM_ID TEXT,
@@ -110,7 +113,7 @@ create table MEMBER4(
  	 [표현법]
  	 COMMENT ON COLUMN 테이블명.컬럼명 IS '주석내용';
  	 
- 	  >> 주석 수정 후 다시 실행
+ 	  >> 주석 수정 후 다시 실행하면 수정본으로 저장 됨
  */
 
 comment on column MEMBER.MEM_NO is '회원번호';
@@ -142,7 +145,7 @@ insert into member values(null,null,null,null,null,null,null,NULL);
  		2) 참조 무결성 제약 조건 : FOREIGN KEY(외래키) 조건 위배
  		
 	 	* 제약조건 종류 : NOT NULL, UNIQUE, PRIMARY KEY, CHECK(조건), FOREIGN KEY(외래키)
-	 	* 
+	 	  
 	 	* 제약조건을 부여하는 2가지 방식
 	 	 	1) 컬럼 레벨 방식 : 컬럼명의 자료형 옆에 기술
 	 	 	2) 테이블 레벨 방식 : 모든 컬럼들을 나열한 후 마지막에 기술
@@ -167,9 +170,9 @@ create table MEM_NOTNULL(
 insert into MEM_NOTNULL VALUES(1, 'user01', 'pwd01', 
 	'최명길', '여', '010-3456-6789', 'user01@naver.com');
 
+-- not null 설정한 자리에 NULL을 입력하면 제약조건 위배로 오류 발생
 insert into MEM_NOTNULL VALUES(2, 'user02', 'pwd02', 
 	null, '여', '010-3456-6789', 'user01@naver.com');
---> not null 제약조건 위배로 오류 발생
 
 insert into MEM_NOTNULL VALUES(2, 'user02', 'pwd02', 
 	'김말똥', '남', '010-3456-6789', 'user01@naver.com');
@@ -258,11 +261,11 @@ create table mem_check(
 						mem_id VARCHAR(20) not null UNIQUE,
 						MEM_PWD VARCHAR(20) not null,
 						MEM_NAME VARCHAR(20) not null,
---						-- GENDER CHAR(1) CHECK(GENDER in ('남', '여')),
+--						-- GENDER CHAR(1) CHECK(GENDER in ('남', '여')),		-- 컬럼레벨방식
 						GENDER CHAR(1),
 						PHONE VARCHAR(13),
 						EMAIL VARCHAR(30)
-						constraint GENDER_CHK CHECK(GENDER in ('남','여'))
+						constraint GENDER_CHK CHECK(GENDER in ('남','여'))		-- 테이블레벨방식
 						);	
 
 create table mem_check2(
@@ -273,8 +276,8 @@ create table mem_check2(
 						GENDER CHAR(1) ,
 						PHONE VARCHAR(13),
 						EMAIL VARCHAR(30)
-						CHECK(GENDER in ('남', '여'))
-						);		-- 테이블 레벨
+						CHECK(GENDER in ('남', '여'))			-- 테이블 레벨
+						);	
 						
 insert into MEM_CHECK values (1, 'user01', 'pwd01', '황미남', 
 	'남', '010-2345-5678', 'user01@google.com');
@@ -317,7 +320,7 @@ insert into MEM_PRIKEY VALUES(2, 'user02', 'pwd02', '이길동','남',null,null)
 
 /*
 -- [참고] 하나의 테이블에 primary key 키워드를 2개 이상 컬럼에 따로 적을 수 없다
---		테이블 방식으로 2개의 컬럼을 넣을 수 있음
+--		테이블레벨 방식으로 2개의 컬럼을 넣을 수 있음
 	* 복합키
 		: 기본키에 2개 이상의 컬럼을 묶어서 사용
 		
@@ -377,7 +380,7 @@ insert into MEM VALUES(3, 'user03', 'pwd03', '최길동','남',null,null,50);
    다른 테이블에 존재하는 값만 들어와야되는 특정 컬럼에 부여하는 제약조건
    
   >> 컬럼 레벨 방식
-  	 컬럼명 자료형 REFERENCES 참조할테이블명(참조할컬럼명)
+  	 컬럼명 자료형 REFERENCES 참조할테이블명[(참조할컬럼명)]
   	 컬럼명 자료형 [CONTRAINT 제약조건명] REFERENCES 참조할테이블명[(참조할컬럼명)]
   	 
   >> 테이블 레벨 방식	 
@@ -483,7 +486,7 @@ insert into member5 VALUES(1, '고길동', 20, '운동', '2026-11-01');
 insert into member5 VALUES(2, '왕길동', NULL, NULL, NULL);
 insert into member5 VALUES(3, '강길동', NULL, DEFAULT, DEFAULT);
 
-insert into MEMBER5(MEM_NO, MEM_NAME) VALUES(4, '최길동');
+insert into MEMBER5(MEM_NO, MEM_NAME) VALUES(4, '최길동');		-- DEFAULT 값이 있으면 지정값, 없으면 NULL 입력됨
 --=================================================================
 -- tjoeumDB로 바꿔서 실행
 /*
@@ -499,14 +502,14 @@ create table EMPLOYEE_COPY
 as select *
 from EMPLOYEE;
 -- 컬럼, 데이터값 복사 가능
--- 제약조건에서는 NOT NULL 복사 불가
--- DEFAULT, CONNENT 안됨
+-- 제약조건 대부분 복사 불가
+-- DEFAULT, COMMENT 안됨
 
 -- EMPLOYEE테이블의 구조만 복사
 create table EMPLOYEE_COPY2
 as select *
 from EMPLOYEE
-where 1=0;
+where 1=0;		-- 거짓이 되는 값 입력 (4=5, 3=7 등 뭐가오든 상관없음)
 
 create table EMPLOYEE_COPY3
 as select EMP_ID, EMP_NAME, SALARY, BONUS
@@ -516,7 +519,7 @@ where 1=0;
 create table EMPLOYEE_COPY4
 as select EMP_ID, EMP_NAME, SALARY, SALARY*12 연봉
 from EMPLOYEE
-where 1=0;
+where 1=0;		-- WHERE 생략하면 SELECT절 모두 호출 가능
 
 -------------------------------------------------
 /*
