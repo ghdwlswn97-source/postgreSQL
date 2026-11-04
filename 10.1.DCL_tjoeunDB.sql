@@ -61,23 +61,46 @@ where rolname='sample2';
  	GRANT 권한종류 ON 특정객체 TO 사용자;
 */
 -- 2단계 : SAMPLE에게 TJOEUN 데이터베이스에 접속할 수 있는 권한
+grant connect on database TJOEUN to SAMPLE;
 
+-- 3단계 : 스키마 사용 권한 부여
+grant usage on schema public to sample;
+-- public은 스키마에 접근할 수 있는 권한
 
+-- 4단계 : 테이블 권한 부여
+-- 조회만 가능하게 부여
+grant select on table employee to sample;
 
+-- 다른 ddl 권한 부여
+grant insert, update, delete on table employee to sample;
 
+-- public 스키마의 모든 기존 테이블에 모든 권한 부여
+grant all privileges on all tables in schema public to sample;
 
+-- 앞으로 생성될 테이블에 권한 부여
+alter default privileges in schema public
+grant all privileges on tables to sample;
 
+-- 시퀀스 사용권한
+grant usage, select on all sequences in schema public to sample;
 
+-- ***대체적으로 3개를 부여하면 거의 모든 걸 사용가능
+grant connect on database tjoeun to sample;
+grant usage on schema public to sample;
+grant all privileges on all tables in schema public to sample;
 
+------------------------------------------------------------------
+-- 권한 회수
+-- REVOKE 회수할권한 ON 특정객체 FROM 계정명;
 
+-- 한 테이블의 권한을 개별적으로 회수
+revoke SELECT on table EMPLOYEE from SAMPLE;
 
+-- EMPLOYEE테이블의 모든 권한 회수
+revoke all on table EMPLOYEE from SAMPLE;
 
-
-
-
-
-
-
+-- 모든 테이블 권한 회수
+revoke all on all tables in schema PUBLIC from SAMPLE;
 
 
 
