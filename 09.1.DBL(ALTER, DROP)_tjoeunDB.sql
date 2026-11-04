@@ -137,9 +137,47 @@ alter table DEPT_CP rename column DEPT_TITLE to DEPT_NAME;
  	3.2 제약조건명 변경
  	
  	[표현법]
- 	RENAME CONSTRAINT 기존제약조건명 TO 바꿀제약조건명
+ 	alter table 테이블명 RENAME CONSTRAINT 기존제약조건명 TO 바꿀제약조건명
 */
+-- DEPT_CP에서 제약조건명 DEPT_CP_DEPT_ID_NOT_NULL을 DCOPY_LID_NN로 변경
 alter table DEPT_CP rename constraint DEPT_CP_DEPT_ID_NOT_NULL to DCOPY_LID_NN;
+
+/*
+	3.3 테이블명 변경
+	
+	[표현법]
+	alter table 테이블명 RENAME TO 바꿀테이블명
+ * */
+-- DEPT_CP테이블명을 DEPT_TEST로 변경
+alter table DEPT_CP RENAME to DEPT_TEST;
+
+------------------------------------------------
+/*
+  4. 테이블 삭제
+  	DROP TABLE 테이블명;
+ */
+drop table DEPT_TEST;
+
+-- 외래키가 걸려있으면 drop table DEPT_TEST;로 삭제 불가.
+--drop table 테이블명 cascade;로 외래키까지 삭제
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

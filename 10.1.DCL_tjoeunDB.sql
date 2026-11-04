@@ -1,0 +1,92 @@
+/*
+ <DCL : DATA CONTROL LANGUAGE>
+ 	데이터 제어 언어
+ 	
+ 	데이터베이스의 Role에게 권한을 부여(GRANT) 하거나 회수(REVOKE)하는 구문
+ 	
+ 	> 시스템권한 : 데이터베이스에 접속, 생성, Role 생성 및 관리하는 권한
+ 	> 객체 접근 권한 : 특정객체(테이블, 뷰, 시퀀스 등)에 접근하거나 조작할 수 있는 권한
+ 	
+ 	* 시스템 권한의 종류
+ 		- LOGIN : 데이터베이스에 접속할 수 있는 권한
+ 		- CREATEDB : 데이터베이스를 생성할 수 있는 권한
+ 		- CREATE NO SCHEMA : 해당 스키마에 객체를 생성할 수 있는 권한
+ 		- USAGE ON SCHEMA : 해당 스키마의 객체를 접근할 수 있는 권한
+ 		
+ 	* Role 기반 권한 관리
+ 		- app_user <- 애플리케이션이 사용하는 계정
+ 		- developer <- 개발자들에게 공통권한을 부여하는 그룹
+ 		- analyst <- 데이터 분석가에게 공통 권한을 부여하는 그룹
+ 		- dba <- db관리 작업을 수행하는 관리자용
+ */
+--===================================================
+--		<시스템 권한 부여>
+------------------------------------------------------
+-- 사용자 생성 및 login 권한, 반드시 비밀번호 넣어줘야 함
+create user sample with password '1234';
+create role sample login password'1234';
+
+-- 사용자만 생성
+create user sample2;
+-- 나중에 권한부여
+alter role sample2 login;
+alter role sample2 with password '1234';
+
+-- 전체 user보기
+select rolname
+from pg_roles;
+
+-- 특정 사용자만 확인
+select * 
+from pg_roles
+where rolname='sample2';
+
+--===================================================
+--		<객체 접근 권한 부여>
+------------------------------------------------------
+/*
+ * 객체 접근 권한 종류
+ 	특정 객체에 접근하여 조작할 수 있는 권한
+ 	
+ 	권한종류
+ 	SELECT			조회			TABLE, VIEW, SEQUENCE
+ 	INSERT			입력			TABLE, VIEW
+ 	UPDATE			수정			TABLE, VIEW
+ 	DELETE			삭제			TABLE, VIEW
+ 	TRUNCATE		전체삭제 		TABLE	
+ 	REFERENCES		FK생성		TABLE
+ 	TRIGGER			트리거생성 		TABLE
+ 	
+ 	[표현식]
+ 	GRANT 권한종류 ON 특정객체 TO 사용자;
+*/
+-- 2단계 : SAMPLE에게 TJOEUN 데이터베이스에 접속할 수 있는 권한
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
