@@ -94,14 +94,13 @@ INFO1 as (
 	select EMP_ID, EMP_NAME, DEPT_CODE, HIRE_DATE
 	from DATA_INFO
 )
---INFO2 as (
---	insert into EMP_NAME (EMP_ID, EMP_NAME, MANAGER_ID)
---	select EMP_ID, EMP_NAME, MANAGER_ID
---	from DATA_INFO
---);
-
+-- select
 insert into EMP_MANAGER (EMP_ID, EMP_NAME, MANAGER_ID)
 	select EMP_ID, EMP_NAME, MANAGER_ID from DATA_INFO;
+
+-- values
+insert into EMP_MANAGER (EMP_ID, EMP_NAME, MANAGER_ID)
+values(200, 'kkk','203');
 
 
 --========================================
@@ -259,17 +258,4 @@ truncate table EMP_SALARY;
 truncate table EMP_01;
 select * from EMP_SALARY;
 rollback;
-
-
-
-
-
-
-
-
-
-
-
-
-
 
