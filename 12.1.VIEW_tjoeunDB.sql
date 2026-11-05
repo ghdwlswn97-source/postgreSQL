@@ -39,20 +39,139 @@ where NATIONAL_NAME ='일본';
  [표현법]
  CREATE VIEW 뷰명 
  AS 서브쿼리;
- * */
+ */
+create view VW_EMPLOYEE 
+as select EMP_ID, EMP_NAME, DEPT_TITLE, SALARY,NATIONAL_NAME
+	from EMPLOYEE
+	join department on (DEPT_CODE=DEPT_ID)
+	join location on (LOCATION_ID=LOCAL_CODE)
+	join national using (national_code);
+
+select *
+from VW_EMPLOYEE;
+
+--select *
+--from (
+--	select EMP_ID, EMP_NAME, DEPT_TITLE, SALARY,NATIONAL_NAME
+--	from EMPLOYEE
+--	join department on (DEPT_CODE=DEPT_ID)
+--	join location on (LOCATION_ID=LOCAL_CODE)
+--	join national using (national_code);
+--);
 
 
+select * from vw_employee 
+where NATIONAL_NAME='한국';
 
+select * from vw_employee 
+where NATIONAL_NAME='러시아';
 
+select * from vw_employee 
+where NATIONAL_NAME='중국';
 
+---------------------------------------------
+/*
+ * 뷰 컬럼에 별칭
+ 	서브쿼리의 SELECT절에 함수식이나 산술연산식이 기술되었다면 되도록이면 별칭을 부여하는게 편함 
+ 	별칭을 안넣으면 알아서 붙여주지만 나중에 SELECT등을 할 때 컬럼명을 호출하기 어려움
+*/
+-- 전 사원의 사번, 이름, 직급명, 성별(남/여), 근무년수를 조회할 수 있는 뷰(VW_EMP_JOB)생성
+create view VW_EMP_JOB 
+as select EMP_ID, EMP_NAME, JOB_NAME,
+		case when SUBSTR(EMP_NO, 8, 1) in ('1','3') then '남'
+			when SUBSTR(EMP_NO, 8, 1)in ('2','4') then '여'
+		end,
+		extract(year from CURRENT_DATE) - EXTRACT(year from HIRE_DATE)
+	from EMPLOYEE
+	join JOB using (JOB_CODE);
 
+select "case" from vw_emp_job ;
+select "?column?" from vw_emp_job;
 
+drop view vw_emp_job;
+drop view vw_job;
 
+create or replace view vw_emp_job
+as select EMP_ID, EMP_NAME, JOB_NAME,
+		case when SUBSTR(EMP_NO, 8, 1) in ('1','3') then '남'
+		 	 when SUBSTR(EMP_NO, 8, 1)in ('2','4') then '여'
+		end as 성별,
+		extract(year from CURRENT_DATE) - EXTRACT(year from HIRE_DATE) as 근무년수
+	from EMPLOYEE
+	join JOB using (JOB_CODE);
 
+select * from vw_emp_job;
 
+select * from vw_emp_job
+where 성별 = '여';
 
+select * from vw_emp_job
+where 근무년수 >= 20;
 
+--------------------------------------------------------------------------------------
+/*
+ - AGE() 함수 : 두 날짜 사이의 차이를 연도, 월, 일 단위로 계산해 주는 함수
+ 	AGE(현재날짜, 과거날짜)
+*/
+select AGE(CURRENT_DATE, DATE '1997-02-10');
 
+select EMP_ID, EMP_NAME, JOB_NAME,
+		case when SUBSTR(EMP_NO, 8, 1) in ('1','3') then '남'
+		 	 when SUBSTR(EMP_NO, 8, 1)in ('2','4') then '여'
+		end as 성별,
+		extract(year from AGE(CURRENT_DATE, HIRE_DATE)) as 근무년수
+	from EMPLOYEE
+	join JOB using (JOB_CODE);
+
+----------------------------------------------------------------------------
+/*
+ * VIEW 삭제
+   DROP VIEW 뷰명
+*/
+drop view VW_EMP_JOB;
+
+--------------------------------------------------------------------
+-- 생성된 뷰를 통해 INSERT, UPDQTE, DELETE가능
+
+create view VW_JOB
+as select JOB_CODE, JOB_NAME
+	from JOB;
+
+-- 뷰를 통한 INSERT
+insert into VW_JOB VALUES('J8', '인턴');
+
+select * from VW_JOB;
+select * from JOB;
+
+-- 뷰를 통한 UPDATE
+update VW_JOB
+set JOB_NAME = '알바'
+where JOB_CODE='J8';
+
+-- 뷰를 통한 DELETE
+delete from VW_JOB
+where JOB_CODE='J8';
+
+/*
+ - DML 명령어로 조작이 불가능한 경우
+ 	1) 뷰에 정의되어 있지 않은 컬럼을 조작하고자 할 때
+ 	2) 뷰에 정의되어 있지 않은 컬럼중에 원본테이블상에 
+ 		NOT NULL제약조건이 지정되어 있는 경우 INSERT 불가능
+ 	3) 산술식 또는 함수식으로 정의 되어있는 경우
+ 	4) 그룹함수나 GROUP BY절에 포함되어 있는 경우
+ 	5) DISTINCT 구문이 포함 되어 있는 경우
+ 	6) JOIN을 이용하여 여러 테이블을 연결시켜 놓은 경우
+*/
+-- 뷰 생성
+create view VW_JOB2
+as select JOB_CODE
+	from JOB;
+
+select * from VW_JOB2;
+select * from JOB;
+
+-- INSERT (뷰에 없는 컬럼에 INSERT 불가)
+insert into VW_JOB2 (JOB_CODE, JOB_NAME) values ('J8','인턴');
 
 
 
