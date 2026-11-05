@@ -6,8 +6,7 @@
 - 비밀번호: test1234
 - 로그인 가능하도록 설정
 */
-create user practice_dcl_user with password 'TEST1234';
-create role practice_dcl_user LOGIN password 'TEST1234';
+create role practice_dcl_user LOGIN password 'test1234';
 
 -- 문제 2. practice_dcl_user에게 tjoeun 데이터베이스에 접속할 수 있는 CONNECT 권한을 부여
 grant connect on database TJOEUN to practice_dcl_user;
@@ -30,8 +29,9 @@ grant insert, update, delete on table EMPLOYEE to practice_dcl_user;
 revoke insert on EMPLOYEE from practice_dcl_user;
 
 SELECT *
-FROM information_schema.table_privileges
-WHERE table_name = 'employee';
+FROM information_schema.RLOE_TABLE_GRANTS
+WHERE GRANTEE = 'practice_dcl_user'
+	and TABLE_NAME = EMPLOYEE;
 -- ===========================================================================
 -- 현재 접속 세션에서만 사용 접속을 종료하면 자동 삭제되는 테이블을 생성 후 문제풀기
 CREATE TEMP TABLE practice_emp AS
@@ -60,6 +60,7 @@ rollback;
 
 select *
 from practice_emp;
+
 /*
 문제 7. 다음 작업을 순서대로 수행하기.
 1) 트랜잭션을 시작
@@ -176,4 +177,10 @@ where EMP_ID in ('900', '200');
 
 rollback;
 -- 문제 11. 문제1~5까지 주었던 모든 권한 삭제
-revoke all on all tables in schema PUBLIC from practice_dcl_user;
+revoke all PRIVILEGES on table EMPLOYEE from practice_EMP;
+REVOKE USAGE ON SCHEMA PUBLIC FROM practice_emp;
+REVOKE CONNECT ON DATABASE TJOEUN FROM practice_emp;
+
+
+
+

@@ -63,7 +63,9 @@ commit;
 ------------------------------------------------------
 begin;
 delete from emp_01 where emp_id='800';
+
 select * from emp_01;
+
 savepoint sp1;
 
 insert into emp_01(EMP_ID) VALUES('900');

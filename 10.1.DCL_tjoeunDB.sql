@@ -24,7 +24,7 @@
 ------------------------------------------------------
 -- 사용자 생성 및 login 권한, 반드시 비밀번호 넣어줘야 함
 create user sample with password '1234';
-create role sample login password'1234';
+create role sample login password'1234';		-- 위와 동일
 
 -- 사용자만 생성
 create user sample2;
