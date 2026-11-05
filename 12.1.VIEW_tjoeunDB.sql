@@ -157,7 +157,7 @@ where JOB_CODE='J8';
  	1) 뷰에 정의되어 있지 않은 컬럼을 조작하고자 할 때
  	2) 뷰에 정의되어 있지 않은 컬럼중에 원본테이블상에 
  		NOT NULL제약조건이 지정되어 있는 경우 INSERT 불가능
- 	3) 산술식 또는 함수식으로 정의 되어있는 경우
+ 	3) 산술식 또는 함수식으로 정의 되어있는 경우(원본 테이블의 없는 컬럼 생성 불가, 기존 컬럼 중 산술식 또는 함수식은 조회만 가능)
  	4) 그룹함수나 GROUP BY절에 포함되어 있는 경우
  	5) DISTINCT 구문이 포함 되어 있는 경우
  	6) JOIN을 이용하여 여러 테이블을 연결시켜 놓은 경우
@@ -170,9 +170,122 @@ as select JOB_CODE
 select * from VW_JOB2;
 select * from JOB;
 
+-- 1) 뷰에 정의 되어 있지 않는 컬럼 조작 할 때 오류
 -- INSERT (뷰에 없는 컬럼에 INSERT 불가)
 insert into VW_JOB2 (JOB_CODE, JOB_NAME) values ('J8','인턴');
 
+-- UPDATE (뷰에 없는 컬럼에 UPDATE 불가)
+update VW_JOB2
+set JOB_NAME ='인턴'
+where JOB_CODE ='J7';
+
+-- DELETE
+delete from VW_JOB2
+where JOB_NAME = '대리';
+
+-- 2) 뷰에 정의되어 있지 않은 컬럼중에 원본테이블상에 NOT NULL제약조건이 지정되어 있는 경우
+create view VW_JOB3
+as select JOB_NAME
+	from JOB;
+
+select * from VW_JOB3;
+select * from JOB;
+
+
+-- INSERT
+begin;
+
+insert into VW_JOB3 VALUES('인턴');
+
+-- UPDATE(성공)
+update VW_JOB3
+set JOB_NAME ='인턴'
+where JOB_NAME ='사원';
+
+-- DELETE(외래키가 걸려있지 않으면 가능)
+delete from VW_JOB3
+where JOB_NAME = '대리';
+
+select * from VW_JOB3;
+select * from JOB;
+
+rollback;
+
+-- 3) 산술식 또는 함수식으로 정의 되어있는 경우
+drop view VW_EMP_SAL;
+
+create view VW_EMP_SAL
+as select EMP_ID, EMP_NAME, EMP_NO, JOB_CODE, SALARY, SALARY*12 as 연봉
+	from EMPLOYEE;
+
+select * from vw_emp_sal;
+select EMP_NAME, SALARY from EMPLOYEE;
+
+-- INSERT (연봉이 기존 테이블에 없어서 오류)
+insert into VW_EMP_SAL 
+values ('400', '김상진','8564765-214655', 'J5', 3000000, 36000000);
+
+-- UPDATE(연봉이 기존 테이블에 없어서 오류)
+update vw_emp_sal 
+set 연봉 = 8000000
+where EMP_ID = '200';
+
+-- UPDATE(급여)
+begin;
+
+update VW_EMP_SAL
+set SALARY = 9000000
+where EMP_ID='200';
+
+select * from VW_EMP_SAL order by EMP_ID;
+select * from EMPLOYEE order by EMP_ID;
+
+-- DELETE
+delete from VW_EMP_SAL
+where 연봉 = 72000000;
+
+rollback ;
+
+-- 4) 그룹함수나 GROUP BY 절에 포함되어 있는 경우
+create view VW_GROUPDEPT 
+as select DEPT_CODE as 부서명, SUM(SALARY) as 합계, CEIL(AVG(SALARY)) as 평균
+	from EMPLOYEE
+	group by DEPT_CODE;
+/* 뷰 이름 옆에서 컬럼 별칭 설정 가능
+create view VW_GROUPDEPT (부서명, 합계, 평균)
+as select DEPT_CODE, SUM(SALARY), CEIL(AVG(SALARY)) 
+	from EMPLOYEE
+	group by DEPT_CODE;
+	*/
+select * from VW_GROUPDEPT;
+select * from EMPLOYEE;
+
+-- INSERT(오류)
+insert into VW_GROUPDEPT values ('D3',8000000, 4000000);
+
+-- UPDATE(오류. 원본테이블에 합계컬럼이 없고 산술 함수식이어서 오류)
+update VW_GROUDEPT
+set 합계 = 500000
+where 부서명 ='D1';
+
+-- DELETE(오류)
+delete from vw_groupdept 
+where 합계 = 5210000;
+
+-- 5) DISTINCT 구문이 포함 되어 있는 경우
+create view VW_EMP_JOB
+as select distinct JOB_CODE
+	from EMPLOYEE;
+
+select * from VW_EMP_JOB;
+
+-- INSERT(오류)
+insert into VW_EMP_JOB values ('J8');
+
+-- UPDATE(오류)
+update VW_EMP_JOB
+set JOB_CODE = 'J8'
+where JOB_CODE = 'J7';
 
 
 
@@ -181,6 +294,13 @@ insert into VW_JOB2 (JOB_CODE, JOB_NAME) values ('J8','인턴');
 
 
 
+
+
+
+
+
+
+-- 6) JOIN을 이용하여 여러 테이블을 연결시켜 놓은 경우
 
 
 
