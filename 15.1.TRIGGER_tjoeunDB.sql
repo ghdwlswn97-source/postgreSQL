@@ -105,21 +105,58 @@ execute function FN_MEM_DELETE();
 
 delete from MEM where MEM_ID=100;
 
+--============================================
+-- 2. 상품입고 및 출고가 되면 재고수량 자동 변경
+-- 상품테이블(재고수량), 입고테이블, 출고테이블
+create table TB_PRODUCT(
+	PCODE numeric primary key, 
+	PNAME VARCHAR(30) not null,
+	BRAND VARCHAR(30) not null,
+	STOCK_QUANT numeric default 0
+);
 
+-- 상품번호 시퀀스
+create sequence SEQ_PCODE
+start with 200
+increment by 5;
 
+-- 데이터 추가
+insert into TB_PRODUCT VALUES(NEXTVAL('SEQ_PCODE'), '갤럭시50', '삼성', default);
+insert into TB_PRODUCT VALUES(NEXTVAL('SEQ_PCODE'), '아이폰20', 'APPLE', 10);
+insert into TB_PRODUCT VALUES(NEXTVAL('SEQ_PCODE'), '노트40', '샤오미', 20);
 
+select * from TB_PRODUCT;
 
+-- 2. 상품입고 테이블
+create table TB_PROSTOCK(
+	TCODE numeric primary key,
+	PCODE numeric references TB_PRODUCT,
+	TDATE DATE,
+	STOCK_COUNT numeric not null,
+	STOCK_PRICE numeric not NULL
+);
 
+-- 시퀀스
+create sequence SEQ_TCODE;
 
+-- 3. 판매테이블
+create table TB_PROSALE(
+	SCODE numeric primary key,
+	PCODE numeric references TB_PRODUCT,
+	SDATE date,
+	SALE_COUNT numeric not null,
+	SALE_PRICE numeric not NULL
+);
 
+create sequence SEQ_SCODE;
 
+-- 200번 상품이 오늘 날짜로 10개 입고
+insert into tb_prostock 
+VALUES(NEXTVAL('SEQ_TCODE'), 200, CURRENT_DATE, 10, 2000000);
 
-
-
-
-
-
-
+update tb_product 
+set STOCK_QUANT= STOCK_QUANT+10
+where PCODE = 200;
 
 
 
