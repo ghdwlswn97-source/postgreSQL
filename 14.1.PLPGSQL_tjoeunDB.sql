@@ -589,18 +589,100 @@ end;
 $$;
 
 -- 연습문제
-/*
- 1. 사원의 연봉을 구하는 PL/PGSQL 블럭 작성, 보너스가 있는 사원은 보너스도 포함하여 계산
- 2. 구구단 짝수단 출력
- 	1) FOR LOOP
- 	2) WHILE LOOP
-*/
+-- 1. 사원의 연봉을 구하는 PL/PGSQL 블럭 작성, 보너스가 있는 사원은 보너스도 포함하여 계산
+do $$
+declare 
+	E EMOLPYEE%ROWTYPE;
+	YSAL NUMERIC;
+begin
+	select *
+	INTO E
+	from EMPLOYEE
+	where EMP_ID=${사번};
+	IF(E.BONUS IS NULL)
+		THEN YSAL := E.SALARY *12;
+	ELSE YSAL := E.SALARY * (1+E.BONUS)*12;
+	END IF;
+	raise notice '%의 연봉은 %입니다.',E.EMP_NAME, TO_CHAR(YSAL, 'FM￦999,999,999');
+end;
+$$;
 
+-- 2. 구구단 짝수단 출력
+-- 	1) FOR LOOP
 
+-- IF 사용
+do $$
+begin
+	for I in 2..9 
+	loop
+		IF MOD(I,2)=0 THEN
+			RAISE NOTICE '%단', I;
+				FOR E IN 1..9
+				LOOP
+					raise notice '%*%=%', I,E, (I*E);
+			END LOOP;
+		END IF;
+	end loop;
+end;
+$$;
 
+-- BY 사용
+do $$
+begin
+	for I in 2..9 BY 2
+	loop
+		RAISE NOTICE '%단', I;
+			FOR E IN 1..9
+			LOOP
+				raise notice '%*%=%', I,E, (I*E);
+			END LOOP;
+		END IF;
+	end loop;
+end;
+$$;
 
+-- 	2) WHILE LOOP
+-- IF 사용
+do $$
+DECLARE
+	I NUMERIC :=2;
+	E NUMERIC ;
+begin
+	WHILE I <10
+	loop
+		IF I%2=0 THEN
+			RAISE NOTICE '%단', I;
+				E :=1;
+				WHILE E <10
+					LOOP
+					raise notice '%*%=%', I,E, (I*E);
+					E:=E+1;
+					END LOOP;
+		END IF;
+		I:=I+1;
+	end loop;
+end;
+$$;
 
-
+-- I를 2씩 증가
+do $$
+DECLARE
+	I NUMERIC :=2;
+	E NUMERIC ;
+begin
+	WHILE I <10
+	loop
+		RAISE NOTICE '%단', I;
+			E :=1;
+			WHILE E <10
+				LOOP
+				raise notice '%*%=%', I,E, (I*E);
+				E:=E+1;
+				END LOOP;
+		I:=I+2;
+	end loop;
+end;
+$$;
 
 
 
