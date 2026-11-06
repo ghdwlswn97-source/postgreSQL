@@ -20,8 +20,6 @@
  	   	-- 실행할 SQL및 PL/pgSQL 구문
  	   [EXCEPTION]
  	   	-- 에외 처리 영억
- 	   
- 	   
  	   END $$;
  	   
  	   * 실행방법 : 익명블로(일회성 작업 적합)
@@ -38,7 +36,7 @@
  	     >> FUNCTION 생성 및 실행
 	 	     CREATE [OR REPLACE] FUNCTION 함수명()
 	 	     RETURN VOID
-	 	     AS %%
+	 	     AS $$
 	 	     BEGIN
 	 	     	-- 실행할 SQL 및 PL/pgSQL 구문
 	 	     END;
@@ -52,6 +50,9 @@
  	     	BEGIN;
  	     		-- 실행할 SQL 및 PL/pgSQL 구문
  	     	END;
+ 	     	$$ language plpgsql;
+ 	     	
+ 	     	실행시 : call 프로시저면();
 */
 do $$
 begin
@@ -161,8 +162,27 @@ begin
 end;
 $$;
 
+---------------------------------------------------
+/*
+ 1.3) ROW 타입 변수 선언
+ 		테이블의 한 행에 대한 모든 컬럼값을 한꺼번에 담을 수 있는 변수
+ 		[표현식]
+ 		변수명 테이블명%ROWTYPE;
+*/
 
-
+do $$
+declare
+	E EMPLOYEE%ROWTYPE;
+begin
+	select *
+	into E
+	from EMPLOYEE
+	where EMP_ID = ${사번};
+	raise notice '사원명 : %', E.EMP_NAME;
+	raise notice '급여 : %', E.SALARY;
+	raise notice '보너스 : %', E.BONUS;
+end;
+$$
 
 
 
