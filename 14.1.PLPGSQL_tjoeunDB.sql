@@ -439,17 +439,162 @@ begin
 end;
 $$
 
+-----------------------------------------------------
+/*
+	2) FOR LOOP
+	
+	 [표현식]
+	 FOR 변수 IN [REVERSE] 초기값...최종값
+	 LOOP
+	 	반복할실행문;
+	 END LOOP; 
+*/
+do $$
+begin
+	for I in 1..10
+	loop
+		raise notice '%', I;
+	end loop;
+end;
+$$;
+
+do $$
+begin
+	for I in REVERSE 5..1
+	loop 
+		raise notice '%', I;
+	end loop;
+end;
+$$;
 
 
+create table TEST(
+	TNO numeric primary key,
+	TDATE DATE
+);
 
+create sequence SEQ_TNO
+increment by 2;
 
+do $$
+begin
+	FOR I in 1..100
+	loop
+		insert into TEST VALUES(NEXTVAL('SEQ_TNO'), CURRENT_DATE);
+	end loop;
+	
+end;
+$$;
 
+select * from TEST;
 
+-------------------------------------------------------------------
+/*
+ 3) WHILE LOOP문
+ 
+ 	[표현식]
+ 	WHILE 반복분이수행될조건
+ 	LOOP 
+ 		반복실행구문;
+ 	END LOOP;
+*/
+do $$
+declare
+	I numeric :=1;
+begin
+	while I<6
+	loop
+		raise notice '%', I;
+		I := I+1;
+	end loop;
+end;
+$$;
 
+------------------------------------------------------
+/*
+ 3. 예외처리부
+ 	: 실행중 발생하는 오류
+ 	
+ 	[표현식]
+ 	EXCEPTION 
+ 		WHEN 예외명1 THEN 예외처리구문1;
+ 		WHEN 예외명2 THEN 예외처리구문2;
+ 		WHEN 예외명3 THEN 예외처리구문3;
+ 		WHEN OTHERS THEN 예외처리구문N;
+ 		
+ 		* 시스템 예외
+ 			- NO_DATE_FOUND : SELECT한 결과가 한 행도 없을 경우
+ 			- TOO_MANY_ROWS : SELECT한 결과가 여러행 일 때
+ 			- ZERO_DIVIDE : 0으로 나눌때
+ 			- DUP_VAL_ON_INDEX : UCIQUE제약조건에 위배되었을 때
+*/
+do $$
+declare
+	result1 numeric;
+	INPUT_NUM numeric := ${숫자};
+begin
+	result1 := 10/INPUT_NUM;
+	raise notice '결과 : %', RESULT1;
+EXCEPTION
+	WHEN DIVISION_BY_ZERO THEN RAISE NOTICE '0으로 나눌 수 없습니다.';
+end;
+$$;
 
+-- UNIQUE 제약조건 위반
+do $$
+begin
+	update EMPLOYEE
+	set EMP_ID = ${사번}
+	where EMP_NAME ='이정하';
+EXCEPTION 
+--	WHEN unique_violatION THEN RAISE NOTICE '이미 존재하는 사번입니다.';
+	WHEN OTHERS THEN RAISE NOTICE '이미 존재하는 사번입니다.';
+end;
+$$;
 
+-- 사수 211 : 1명, 200 : 여러명, 213 : 없음
+do $$
+declare 
+	EID EMPLOYEE.EMP_ID%type;
+	ENAME EMPLOYEE.EMP_NAME%type;
+begin
+	select EMP_ID, EMP_NAME
+	into EID,ENAME
+	from EMPLOYEE
+	where MANAGER_ID = '213';
+	raise notice '사번 : %', EID;
+	raise notice '이름 : %', ENAME;
+end;
+$$;
 
+-- EXCEPTION
 
+do $$
+declare 
+	EID EMPLOYEE.EMP_ID%type;
+	ENAME EMPLOYEE.EMP_NAME%type;
+begin
+	select EMP_ID, EMP_NAME
+	into EID,ENAME
+	from EMPLOYEE
+	where MANAGER_ID = ${사번};
+	raise notice '사번 : %', EID;
+	raise notice '이름 : %', ENAME;
+EXCEPTION 
+	WHEN TOO_MANY_ROWS THEN 
+		RAISE NOTICE '너무많은 행이 조회되었습니다';
+	WHEN NO_DATE_FOUND THEN
+		RAISE NOTICE '조회 결과가 없습니다.';
+end;
+$$;
+
+-- 연습문제
+/*
+ 1. 사원의 연봉을 구하는 PL/PGSQL 블럭 작성, 보너스가 있는 사원은 보너스도 포함하여 계산
+ 2. 구구단 짝수단 출력
+ 	1) FOR LOOP
+ 	2) WHILE LOOP
+*/
 
 
 
