@@ -184,6 +184,24 @@ insert into TB_PROSTOCK
 VALUES(NEXTVAL('SEQ_TCODE'), 210, CURRENT_DATE, 100,2500000);
 
 
+-- 판매
+create function FN_TRG_PROSALE()
+return trigger
+as $$
+begin
+	update TB_PROSALE
+	set SALE_COUNT = STOCK_QUANT-new.SALE_COUNT
+	where PCODE =new.PCODE;
+	return new;
+end;
+$$ language PLPGSQL;
+
+create trigger TRG_PROSALE
+after insert on TB_PROSALE
+for each row
+EXECUTE FUNCTION FN_TRG_PROSALE();
+
+
 		  
 		  
 		  
