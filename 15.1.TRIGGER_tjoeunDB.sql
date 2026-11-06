@@ -158,10 +158,30 @@ update tb_product
 set STOCK_QUANT= STOCK_QUANT+10
 where PCODE = 200;
 
+-- 입고 테이블(tb_product)에 입고 되었을 때 트리거 정의
+-- 함수정의
+create function FN_TRG_STOCK()
+returns trigger 
+as $$
+begin
+	update tb_product
+	set STOCK_QUANT= STOCK_QUANT+new.STOCK_COUNT
+	where PCODE = new.PCODE;
+	return new;
+end;
+$$ language PLPGSQL;
 
+-- 트리거생성
+create trigger TRG_STOCK
+after insert on TB_PROSTOCK
+for each row
+execute function FN_TRG_STOCK();
 
+insert into TB_PROSTOCK
+VALUES(NEXTVAL('SEQ_TCODE'), 205, CURRENT_DATE, 5,1500000);
 
-
+insert into TB_PROSTOCK
+VALUES(NEXTVAL('SEQ_TCODE'), 210, CURRENT_DATE, 100,2500000);
 
 
 		  
