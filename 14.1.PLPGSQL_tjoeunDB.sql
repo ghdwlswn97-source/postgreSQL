@@ -180,9 +180,265 @@ begin
 	where EMP_ID = ${사번};
 	raise notice '사원명 : %', E.EMP_NAME;
 	raise notice '급여 : %', E.SALARY;
-	raise notice '보너스 : %', E.BONUS;
+	raise notice '보너스 : %', COALESCE(E.BONUS, 0);
+--	raise notice '보너스 : %', COALESCE(E.BONUS, '없음');	-- 타입이 안맞아서 오류
 end;
 $$
+
+-- 값이 제대로 안나옴
+do $$
+declare
+	E EMPLOYEE%ROWTYPE;
+begin
+	select EMP_NAME, SALARY, BONUS		-- 무조건 *을 사용
+	into E
+	from EMPLOYEE
+	where EMP_ID = ${사번};
+	raise notice '사원명 : %', E.EMP_NAME;
+	raise notice '급여 : %', E.SALARY;
+	raise notice '보너스 : %', COALESCE(E.BONUS, 0);
+end;
+$$
+/*
+	EMP_ID = 사원명
+	EMP_NAME = 급여
+	EMP_NO = 보너스
+	
+	EMAIL = 값이 안들어감
+	...
+	SALARY = 값이 안들어감		NULL
+	BONUS =  값이 안들어감
+*/
+-------------------------------------------
+-- 2. BEGIN
+/*
+ <조건문>
+	1) IF 조건식 THEN 실행내용 END IF;	(단일 IF문)
+*/
+-- 사번 입력하면 사번, 이름, 급여, 보너스율(%)출력
+-- 단, 보너스 안받는 사원은 '보너스를 받지 않는 사원입니다' 출력
+
+do $$
+declare 
+	EID EMPLOYEE.EMP_ID%type;
+	ENAME EMPLOYEE.EMP_NAME%type;
+	SAL EMPLOYEE.SALARY%type;
+	INCENTIVE EMPLOYEE.BONUS%type;
+begin
+	select EMP_ID, EMP_NAME, SALARY, COALESCE(BONUS,0)
+	into EID, ENAME, SAL, INCENTIVE
+	from EMPLOYEE
+	where EMP_ID = ${사번};
+	raise notice '사번 : %', EID;
+	raise notice '이름 : %', ENAME;
+	raise notice '급여 : %', SAL;
+	IF INCENTIVE=0
+		THEN RAISE NOTICE '보너스를 받지 않는 사원입니다';
+	END IF;
+	raise notice '보너스율 : %', INCENTIVE*100 || '%';
+end;
+$$
+
+--2) IF 조건식 THEN 실행내용 ELSE 실행내용 END IF; (IF_ELSE문)
+do $$
+declare
+	EID EMPLOYEE.EMP_ID%type;
+	ENAME EMPLOYEE.EMP_NAME%type;
+	SAL EMPLOYEE.SALARY%type;
+	INCENTIVE EMPLOYEE.BONUS%type;
+begin
+	select EMP_ID, EMP_NAME, SALARY, coalesce(BONUS,0)
+	into EID, ENAME, SAL, INCENTIVE
+	from EMPLOYEE
+	where EMP_ID = ${사번};
+	raise notice '사번 : %', EID;
+	raise notice '이름 : %', ENAME;
+	raise notice '급여 : %', SAL;
+	if INCENTIVE=0
+		then raise notice '보너스를 받지 않는 사원입니다';
+	else 
+	raise notice '보너스율 : %', IINCENTICE*100 ||'%';
+	end if;
+end;
+$$
+
+-------------------- 실습문제
+/*
+	레퍼런스 변수 : EID, ENAME, DTITLE, NCODE
+	참조 컬럼 : EMP_ID, EMP_NAME, DEPT_TITLE, NATIONAL_CODE
+	일반 변수 : TEAM(소속)
+	
+	실행 : 사용자가 입력한 사번의 사번, 이름, 부서명, 근무국가코드를 변수에 대입
+				단) NCODE값이 KO일 경우 => TEAM에 '국내팀'
+						NCODE값이 KO가 아닐 경우 => TEAM에 '해외팀'
+						
+  출력 : 사번, 이름, 부서명, 소속 출력			
+*/
+do $$
+declare 
+	EID EMPLOYEE.EMP_ID%type;
+	ENAME EMPLOYEE.EMP_NAME%type;
+	DTITLE DEPARTMENT.DEPT_TITLE%type;
+	NCODE national.NATIONAL_CODE%type;
+	TEAM VARCHAR(20);
+begin
+	select EMP_ID, EMP_NAME, DEPT_TITLE, NATIONAL_CODE
+	into EID, ENAME, DTITLE, NCODE
+	from EMPLOYEE
+	join DEPARTMENT on (DEPT_CODE=DEPT_ID)
+	join location on (LOCATION_ID=LOCAL_CODE)
+	join national using (NATIONAL_CODE)
+	where EMP_ID = ${사번};
+	raise notice '사번 : %',EID;
+	raise notice '이름 : %',ENAME;
+	raise notice '부서명 : %',DTITLE;
+	if NCODE='KO'
+		then  TEAM :='국내팀';
+	else 
+		TEAM :='해외팀';
+	end if;
+	raise notice '소속 : %',TEAM;
+end;
+$$
+
+/*
+ 3) IF-ELSE IF 조건문
+ 	IF 조건식1 THEN 실행내용1;
+ 	ELSE 조건식2 THEN 실행내용2;
+ 	ELSIF 조건식3 THEN 실행내용3;
+ 	ELSE 실행내용 4;
+ 	END IF;
+ */
+-- 사용자로부터 점수를 입력받아 학점 출력
+do $$
+declare 
+	SCORE numeric;
+	GRADE VARCHAR(1);
+begin
+	SCORE :=${점수};
+	if SCORE >= 90 then GRADE := 'A';
+	elsif SCORE >= 80 then GRADE :='B';
+	elsif SCORE >= 70 then GRADE :='C';
+	elsif SCORE >= 60 then GRADE :='D';
+	else GRADE := 'F';
+	end IF;
+	raise notice '당신의 점수는 %점이고, 학점은 %학점입니다.', SCORE, GRADE;
+end;
+$$
+
+-------------------------
+/*
+ 사용자로부터 입력받은 사번의 사원의 급여를 조회하여 SAL변수에 대입
+ 500만원 이상이면 '고급'
+ 300만원 이상이면 '중급'
+ 300만원 미만이면 '초급'
+ 출력 : '%사원의 급여 등급은 %입니다.'
+ */
+do $$
+DECLARE
+	SAL EMPLOYEE.SALARY%TYPE;
+	EID EMPLOYEE.EMP_ID%type;
+	ENAME EMPLOYEE.EMP_NAME%type;
+	SALLEVEL VARCHAR(2);
+begin
+	select SALARY, EMP_ID, EMP_NAME
+	into SAL, EID, ENAME
+	from EMPLOYEE
+	where EMP_ID = ${사번};
+	if SAL >=5000000 then SALLEVEL:= '고급';
+	elsif SAL>=3000000 then SALLEVEL:='중급';
+	else SALLEVEL:='초급';
+	END IF;
+	raise notice '%사원의 급여는 %고 등급은 %입니다.', ENAME, SAL, SALLEVEL;
+end;
+$$
+
+/*
+ <CASE 문>
+ CASE 비교대상자
+ 	WHEN 비교할값1 THEN 실행내용1
+ 	WHEN 비교할값2 THEN 실행내용2
+ 	WHEN 비교할값3 THEN 실행내용3
+ 	ELSE 실행내용4
+ END;
+*/
+
+do $$
+declare
+	E EMPLOYEE%ROWTYPE;
+	DNAME VARCHAR(20);
+begin 
+	select *
+	into E
+	from EMPLOYEE
+	where EMP_ID=${사번};
+	
+	case E.DEPT_CODE
+		when 'D1' then DNAME := '인사관리부'
+		when 'D2' then DNAME := '회계관리부'
+		when 'D3' then DNAME := '마케팅부'
+		when 'D4' then DNAME := '국내영업부'
+		when 'D8' then DNAME := '기술지원부'
+		when 'D9' then DNAME := '총무부'
+		else DNAME :='해외영업부'
+	end;
+--	DNAME := case E.DEPT_CODE
+--		when 'D1' then '인사관리부'
+--		when 'D2' then '회계관리부'
+--		when 'D3' then '마케팅부'
+--		when 'D4' then '국내영업부'
+--		when 'D8' then '기술지원부'
+--		when 'D9' then '총무부'
+--		else '해외영업부'
+--	end;
+	
+	RAISE NOTICE '%은 %입니다.', E.EMP_NAME, DNAME;
+end;
+$$
+
+--=========================================================
+/*
+ <반복문>
+ 
+ - LOOP (BASIC LOOP문)
+ [표현식]
+ LOPP
+ 	반복적으로 실행할 구문;
+ 	* 반복을 빠져나갈 구문;
+ END LOOP;
+ 
+ > 반복문으 빠져나오는 조건
+ 1) IF 조건식 THEN EXIT;
+ 2) EXIT WHEN 조건식;
+*/
+-- 1~5까지 1씩 증가하면서 출력
+--	1) IF 조건식으로
+do $$
+declare
+	I numeric := 1;
+begin
+	loop
+		raise notice '%', I;
+		I := I+1;
+		if I = 6 then exit;
+		end if;
+	end loop;
+end;
+$$;
+
+--	2) EXIT WHEN 조건식으로
+do $$
+declare
+	I numeric := 1;
+begin
+	loop
+		raise notice '%', I;
+		I := I+1;
+		EXIT WHEN I=6;
+	end loop;
+end;
+$$
+
 
 
 
